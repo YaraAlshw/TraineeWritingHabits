@@ -1,7 +1,7 @@
 # Agraphia
 ## Survey project code for analyses and figures
 
-#### Collaborators
+### Collaborators
 - Freya Rowland
 - Yara Alshwairikh
 - Ana Fanton Borges
