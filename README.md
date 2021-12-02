@@ -7,3 +7,4 @@
 - Ana Fanton Borges
 - Kyra Prats
 - Mary Burak
+- Marlyse Duguid
