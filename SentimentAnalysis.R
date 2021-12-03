@@ -83,4 +83,28 @@ ggplot(aes(y = hrs_wk_writing, x = reviewsentiment), data = review_bing) +
 
 summary(lm(hrs_wk_writing ~ reviewsentiment, data = review_bing))
 
+# use nrc lexicon to get intent ----
+# this lexicon gets us 230 returned values
+nrc <- get_sentiments("nrc")
+
+writing_nrc <- survey %>%      #creates new dataframe "writing_afinn"
+  inner_join(get_sentiments(lexicon = "nrc"), by = c("science_writing_open" = "word")) %>% #just joins words in AFINN lexicon
+  rename(writesentiment = sentiment)
+
+ggplot(aes(y = hrs_wk_writing, x = writesentiment), data = writing_nrc) +
+  theme_bw(base_size = 14) +
+  geom_violin() +
+  geom_jitter(width = 0.1)
+
+review_nrc <- survey %>%      
+  inner_join(get_sentiments(lexicon = "nrc"), by = c("review_open" = "word")) %>% #just joins words in AFINN lexicon
+  rename(reviewsentiment = sentiment)
+
+ggplot(aes(y = hrs_wk_writing, x = reviewsentiment), data = review_nrc) +
+  theme_bw(base_size = 14) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1)
+
+summary(lm(hrs_wk_writing ~ reviewsentiment, data = review_nrc))
+
         
