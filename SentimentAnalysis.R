@@ -100,11 +100,22 @@ review_nrc <- survey %>%
   inner_join(get_sentiments(lexicon = "nrc"), by = c("review_open" = "word")) %>% #just joins words in AFINN lexicon
   rename(reviewsentiment = sentiment)
 
-ggplot(aes(y = hrs_wk_writing, x = reviewsentiment), data = review_nrc) +
-  theme_bw(base_size = 14) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1)
+
 
 summary(lm(hrs_wk_writing ~ reviewsentiment, data = review_nrc))
 
-        
+# add a column for whether sentiment is positive or negative 
+# anger, disgust, fear, negative, sadness = negative
+# anticipation, joy, positive, surprise, trust = positive
+review_nrc$sentfeel <- ifelse(review_nrc$reviewsentiment == "anger" |
+                                review_nrc$reviewsentiment == "disgust" |
+                                review_nrc$reviewsentiment == "fear" |
+                                review_nrc$reviewsentiment == "negative" |
+                                review_nrc$reviewsentiment == "sadness",
+                              "negative", "positive")
+review_nrc$sentfeel <- as.factor(review_nrc$sentfeel)
+
+ggplot(aes(y = hrs_wk_writing, x = reviewsentiment, fill = sentfeel), data = review_nrc) +
+  theme_bw(base_size = 14) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1)
