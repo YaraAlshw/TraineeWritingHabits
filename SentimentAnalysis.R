@@ -31,34 +31,56 @@ survey$science_writing_open <- tolower(survey$science_writing_open)
 survey$review_open <- tolower(survey$review_open)
 
 # trim white space around words
-survey$science_writing_open <- trimws(survey$science_writing_open)
-survey$review_open <- trimws(survey$review_open)
+# survey$science_writing_open <- trimws(survey$science_writing_open)
+# survey$review_open <- trimws(survey$review_open)
 
-# get individual afinn scores
-get_sentiments("abuse of power", arg = "afinn")
 
 # columns of interest: science_writing_open [57] and review_open [59]
-# use AFINN lexicon to get value between -5 to 5 for words
+
+# use AFINN lexicon to get value between -5 to 5 for words ----
+# Note: afinn lexicon cut down entries from 277 to 90. :/
 afinn <- get_sentiments("afinn")
 
-writing_afinn <- survey %>%      #creates new dataframe "brk_afinn"
+writing_afinn <- survey %>%      #creates new dataframe "writing_afinn"
   inner_join(get_sentiments(lexicon = "afinn"), by = c("science_writing_open" = "word")) %>% #just joins words in AFINN lexicon
   rename(writesentiment = value)
 
 ggplot(aes(y = hrs_wk_writing, x = writesentiment), data = writing_afinn) +
   theme_bw(base_size = 14) +
-  geom_point()
+  geom_jitter(width = 0.1)
 
-both_afinn <- survey %>%      #creates new dataframe "brk_afinn"
+summary(lm(hrs_wk_writing ~ writesentiment, data = writing_afinn))
+
+review_afinn <- survey %>%      #creates new dataframe "both_afinn"
   inner_join(get_sentiments(lexicon = "afinn"), by = c("review_open" = "word")) %>% #just joins words in AFINN lexicon
   rename(reviewsentiment = value)
 
-survey %>%
-  inner_join(afinn, survey$science_writing_open) %>%
-  count(word, sort = TRUE)
+ggplot(aes(y = hrs_wk_writing, x = reviewsentiment), data = review_afinn) +
+  theme_bw(base_size = 14) +
+  geom_jitter(width = 0.1)
 
-survey$writingsent <- inner_join(survey, afinn, by = c("word" = "science_writing_open"))
+summary(lm(hrs_wk_writing ~ reviewsentiment, data = review_afinn))
 
-top_sentiment_words <- survey$science_writing_open %>%
-  inner_join(get_sentiments("afinn"), by = "word") %>%
-  mutate(contribution = value * n / sum(n))
+# use BING lexicon to get intent ----
+# this lexicon gets us 189 returned values
+bing <- get_sentiments("bing")
+
+writing_bing <- survey %>%      #creates new dataframe "writing_afinn"
+  inner_join(get_sentiments(lexicon = "bing"), by = c("science_writing_open" = "word")) %>% #just joins words in AFINN lexicon
+  rename(writesentiment = sentiment)
+
+ggplot(aes(y = hrs_wk_writing, x = writesentiment), data = writing_bing) +
+  theme_bw(base_size = 14) +
+  geom_jitter(width = 0.1)
+
+review_bing <- survey %>%      
+  inner_join(get_sentiments(lexicon = "bing"), by = c("review_open" = "word")) %>% #just joins words in AFINN lexicon
+  rename(reviewsentiment = sentiment)
+
+ggplot(aes(y = hrs_wk_writing, x = reviewsentiment), data = review_bing) +
+  theme_bw(base_size = 14) +
+  geom_jitter(width = 0.1)
+
+summary(lm(hrs_wk_writing ~ reviewsentiment, data = review_bing))
+
+        
