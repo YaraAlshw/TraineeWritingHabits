@@ -1,5 +1,4 @@
 # Agraphia
-## Survey project code for analyses and figures
 
 ### Collaborators
 - Freya Rowland
@@ -9,5 +8,7 @@
 - Mary Burak
 - Marlyse Duguid
 
-#### Sentiment analysis
+## Survey project code for analyses and figures
+
+### Sentiment analysis
 Code for running the sentiment analysis using R package tidytext (https://www.tidytextmining.com/sentiment.html).
