@@ -3,7 +3,7 @@
 ### Collaborators
 - Freya Rowland
 - Yara Alshwairikh
-- Ana Fanton Borges
+- Ana Clara Fanton
 - Kyra Prats
 - Mary Burak
 - Marlyse Duguid
