@@ -1,4 +1,4 @@
-# Agraphia
+# Writing Habits Survey Project
 
 ### Collaborators
 - Freya Rowland
