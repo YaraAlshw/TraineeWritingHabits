@@ -8,7 +8,7 @@
 - Mary Burak
 - Marlyse Duguid
 
-## Survey project code for analyses and figures
+### Code
 
-### Sentiment analysis
-Code for running the sentiment analysis using R package tidytext (https://www.tidytextmining.com/sentiment.html).
+1) SentimentAnalysis.R: Code for running the sentiment analysis using R package tidytext (https://www.tidytextmining.com/sentiment.html).
+2) 
