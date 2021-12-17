@@ -1,4 +1,4 @@
-# Writing Habits Survey Project
+# Multi-level strategies for improving trainee scientific writing habits
 
 ### Collaborators
 - Freya Rowland
