@@ -14,4 +14,4 @@
 
 
 ### Code
-3) SentimentAnalysis.R: Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
+3) [SentimentAnalysis.R](<SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
