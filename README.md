@@ -16,7 +16,7 @@
 * [SentimentAnalysis.R](<SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
 
 ### Tasks left to do
-- [ ] Recreate careers figure without alpha
+- [x] Upload career figure final edit
 - [ ] Standardize figures
 - [ ] Have Mary edit draft
 - [ ] Have Marlyse edit draft
