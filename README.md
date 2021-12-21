@@ -13,7 +13,8 @@
 * [Box figure draft](<https://docs.google.com/presentation/d/1CSUlPH7a5M1es4IyuSy8WH2JvQX9nPUwl5_y_ahd9Xg/edit#slide=id.gcb8342311d_1_0.>)
 
 ### Code in this repository
-* [SentimentAnalysis.R](<SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
+* [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
+* [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
 
 ### Tasks left to do
 - [x] Upload career figure final edit
