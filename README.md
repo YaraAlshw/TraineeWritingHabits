@@ -18,7 +18,7 @@
 ### Tasks left to do
 - [x] Upload career figure final edit
 - [ ] Standardize figures
-- [ ] Have Mary edit draft
+- [x] Have Mary edit draft
 - [ ] Have Marlyse edit draft
 - [ ] Reformat for Ecosphere
 - [ ] Draft inquity letter?
