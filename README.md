@@ -22,6 +22,7 @@
 - [ ] Show group how to upload code to GitHub and update in R
 - [ ] Standardize figures
 - [ ] Finalize box (including name!)
+- [ ] Add in other writing challenges
 - [ ] Authorship order?
 - [ ] Some remaining questions on nitty gritty
 - [ ] Update citations
