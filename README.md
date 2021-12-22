@@ -19,6 +19,7 @@
 
 ### Tasks left to do
 - [x] Upload career figure final edit
+- [ ] Show group how to upload code to GitHub and update in R
 - [ ] Standardize figures
 - [ ] Finalize box (including name!)
 - [ ] Authorship order?
