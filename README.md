@@ -20,6 +20,10 @@
 ### Tasks left to do
 - [x] Upload career figure final edit
 - [ ] Standardize figures
+- [ ] Finalize box (including name!)
+- [ ] Authorship order?
+- [ ] Some remaining questions on nitty gritty
+- [ ] Update citations
 - [x] Have Mary edit draft
 - [ ] Have Marlyse edit draft
 - [ ] Reformat for Ecosphere
