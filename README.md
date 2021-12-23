@@ -23,7 +23,7 @@
 - [ ] Ana upload figure code
 - [ ] Standardize figures (Freya and Ana)
 - [ ] Finalize box content (Yara and Ana)
-- [ ] Finalize box in photoshop
+- [ ] Finalize box in photoshop (Yara and Ana)
 - [ ] Add in other writing challenges (Yara)
 - [ ] Edit writing resources paragraph in intro (Yara)
 - [ ] Authorship order (finalize in January)
