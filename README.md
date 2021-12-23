@@ -30,7 +30,7 @@
 - [x] Some remaining questions on nitty gritty
 - [ ] Update citations (Freya)
 - [x] Have Mary edit draft
-- [ ] Have Marlyse edit draft
+- [ ] Have Marlyse edit draft (send by second week of January)
 - [ ] Reformat for Ecosphere
 - [ ] ~~Draft inquiry letter?~~
 - [ ] Submit! :tada:
