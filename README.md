@@ -21,13 +21,14 @@
 - [x] Upload career figure final edit
 - [x] Show group how to upload code to GitHub and update in R
 - [ ] Ana upload figure code
-- [ ] Standardize figures
-- [ ] Finalize box (including name!)
+- [ ] Standardize figures (Freya and Ana)
+- [ ] Finalize box content (Yara and Ana)
+- [ ] Finalize box in photoshop
 - [ ] Add in other writing challenges (Yara)
 - [ ] Edit writing resources paragraph in intro (Yara)
-- [ ] Authorship order?
+- [ ] Authorship order (finalize in January)
 - [x] Some remaining questions on nitty gritty
-- [ ] Update citations
+- [ ] Update citations (Freya)
 - [x] Have Mary edit draft
 - [ ] Have Marlyse edit draft
 - [ ] Reformat for Ecosphere
