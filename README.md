@@ -25,7 +25,7 @@
 - [ ] Finalize box content (Yara and Ana)
 - [ ] Finalize box in photoshop (Yara and Ana)
 - [ ] Add in other writing challenges (Yara)
-- [ ] Edit writing resources paragraph in intro (Yara)
+- [x] Edit writing resources paragraph in intro (Yara)
 - [ ] Authorship order (finalize in January)
 - [x] Some remaining questions on nitty gritty
 - [ ] Update citations (Freya)
