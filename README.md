@@ -19,15 +19,18 @@
 
 ### Tasks left to do
 - [x] Upload career figure final edit
-- [ ] Show group how to upload code to GitHub and update in R
-- [ ] Standardize figures
-- [ ] Finalize box (including name!)
-- [ ] Add in other writing challenges
-- [ ] Authorship order?
-- [ ] Some remaining questions on nitty gritty
-- [ ] Update citations
+- [x] Show group how to upload code to GitHub and update in R
+- [ ] Ana upload figure code
+- [ ] Standardize figures (Freya and Ana)
+- [ ] Finalize box content (Yara and Ana)
+- [ ] Finalize box in photoshop (Yara and Ana)
+- [ ] Add in other writing challenges (Yara)
+- [x] Edit writing resources paragraph in intro (Yara)
+- [ ] Authorship order (finalize in January)
+- [x] Some remaining questions on nitty gritty
+- [ ] Update citations (Freya)
 - [x] Have Mary edit draft
-- [ ] Have Marlyse edit draft
+- [ ] Have Marlyse edit draft (send by second week of January)
 - [ ] Reformat for Ecosphere
-- [ ] Draft inquity letter?
+- [ ] ~~Draft inquiry letter?~~
 - [ ] Submit! :tada:
