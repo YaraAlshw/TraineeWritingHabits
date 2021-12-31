@@ -43,23 +43,8 @@ survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
 # change data frame for graphing
 survey2 <- gather(survey[,c(11:17)], factor_key = TRUE)
 
-# reorder by highest interest
-survey2 %>%
-  group_by(key) %>%
-  summarize(interest = mean(value, na.rm = TRUE))
-
-survey3 <- survey2 %>%
-  mutate(method = fct_relevel(key, 
-                              levels = "career_teaching",
-                              "career_industry_datascience",
-                              "career_communication",
-                              "career_R2_R3", 
-                              "career_R1",
-                              "career_govt",
-                              "career_NGO"))
-
 # colored by density function and reordered by highest to lowest interest
-all_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), data = survey3) +
+all_career <- ggplot(aes(x = value, y = key2, fill = 0.5-abs(0.5-stat(ecdf))), data = survey2) +
   stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
   scale_fill_gradientn(name = "Tail probability",
                        colours = c("#405364","#585b74","#6c5b7b","#966480","#c6798f", "#df858e", "#eda09c"),
