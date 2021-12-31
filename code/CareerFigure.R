@@ -2,14 +2,13 @@
 library(ggplot2)
 library(dplyr)
 library(ggpubr)
-#library(remotes)
 library(tidyr)
 library(ggridges)
 library(glue)
+library(tidyverse)
 
 # load data
-survey <- read.csv('dataclean_Nov2.csv', header = TRUE)
-
+survey <- read.csv('data/dataclean_Nov2.csv', header = TRUE)
 
 # replace empty cells with NA
 # transform all columns
@@ -39,30 +38,28 @@ survey$pubtotal <- rowSums(survey[,c("firstauthor_pubs", "coauthor_pubs")], na.r
 # create a new column for career stage
 survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
 
-# make two dataframes for grads and postdocs ----
-grads <- subset(survey, is.na(survey$postdoc_yrs))
-postdocs <- subset(survey, !is.na(survey$postdoc_yrs))
-
 # career interests ----
-# make a career database
-grads2 <- gather(grads[,c(11:17)], factor_key=TRUE)
-postdocs2 <- gather(postdocs[,c(11:17)], factor_key = TRUE)
+
+# change data frame for graphing
 survey2 <- gather(survey[,c(11:17)], factor_key = TRUE)
-grads2 %>% dplyr::group_by(key)%>%
-  dplyr::summarise(mean= mean(value, na.rm = TRUE), 
-                   sd= sd(value,na.rm = TRUE), 
-                   max = max(value, na.rm = TRUE),
-                   min = min(value, na.rm = TRUE))
 
-postdocs2 %>% dplyr::group_by(key)%>%
-  dplyr::summarise(mean= mean(value, na.rm = TRUE), 
-                   sd= sd(value,na.rm = TRUE), 
-                   max = max(value, na.rm = TRUE),
-                   min = min(value, na.rm = TRUE))
+# reorder by highest interest
+survey2 %>%
+  group_by(key) %>%
+  summarize(interest = mean(value, na.rm = TRUE))
 
+survey3 <- survey2 %>%
+  mutate(method = fct_relevel(key, 
+                              levels = "career_teaching",
+                              "career_industry_datascience",
+                              "career_communication",
+                              "career_R2_R3", 
+                              "career_R1",
+                              "career_govt",
+                              "career_NGO"))
 
-# colored by density function
-all_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), data = survey2) +
+# colored by density function and reordered by highest to lowest interest
+all_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), data = survey3) +
   stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
   scale_fill_gradientn(name = "Tail probability",
                        colours = c("#405364","#585b74","#6c5b7b","#966480","#c6798f", "#df858e", "#eda09c"),
