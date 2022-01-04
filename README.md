@@ -22,9 +22,9 @@
 - [x] Show group how to upload code to GitHub and update in R
 - [ ] Ana upload figure code
 - [ ] Standardize figures (Freya and Ana)
-- [ ] Finalize box content (Yara and Ana)
+- [x] Finalize box content (Yara and Ana)
 - [ ] Finalize box in photoshop (Yara and Ana)
-- [ ] Add in other writing challenges (Yara)
+- [x] Add in other writing challenges (Yara)
 - [x] Edit writing resources paragraph in intro (Yara)
 - [ ] Authorship order (finalize in January)
 - [x] Some remaining questions on nitty gritty
