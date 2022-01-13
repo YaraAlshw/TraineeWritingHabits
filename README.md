@@ -28,7 +28,7 @@
 - [x] Edit writing resources paragraph in intro (Yara)
 - [ ] Authorship order (finalize in January)
 - [x] Some remaining questions on nitty gritty
-- [ ] Update citations (Freya)
+- [x] Update citations (Freya)
 - [x] Have Mary edit draft
 - [ ] Have Marlyse edit draft (send by second week of January)
 - [ ] Reformat for Ecosphere
