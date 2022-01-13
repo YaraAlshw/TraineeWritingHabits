@@ -1,12 +1,15 @@
 # Multi-level strategies for improving trainee scientific writing habits
 
 ### Collaborators
-- Freya Rowland
-- Yara Alshwairikh
-- Ana Clara Fanton
+
+- Yara Alshwairikh*
+- Ana Clara Fanton*
 - Kyra Prats
 - Mary Burak
 - Marlyse Duguid
+- Freya Rowland
+
+*co-first authors
 
 ### Links to resources for this manuscript
 * [Color palette](<https://coolors.co/405364-585b74-6c5b7b-966480-c6798f-df858e-eda09c> "Color palette") for figures
@@ -26,7 +29,7 @@
 - [ ] Finalize box in photoshop (Yara and Ana)
 - [x] Add in other writing challenges (Yara)
 - [x] Edit writing resources paragraph in intro (Yara)
-- [ ] Authorship order (finalize in January)
+- [x] Authorship order (finalize in January)
 - [x] Some remaining questions on nitty gritty
 - [x] Update citations (Freya)
 - [x] Have Mary edit draft
