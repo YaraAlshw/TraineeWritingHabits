@@ -26,7 +26,7 @@
 ### Tasks left to do
 - [x] Upload career figure final edit
 - [x] Show group how to upload code to GitHub and update in R
-- [ ] Ana upload figure code
+- [x] Ana upload figure code
 - [ ] Standardize figures (Freya and Ana)
 - [x] Finalize box content (Yara and Ana)
 - [ ] Finalize box in photoshop (Yara and Ana)
@@ -36,7 +36,7 @@
 - [x] Some remaining questions on nitty gritty
 - [x] Update citations (Freya)
 - [x] Have Mary edit draft
-- [ ] Friendly review?
+- [x] Friendly review -- sent to Tian Guo
 - [ ] Reformat for Ecosphere
 - [ ] ~~Draft inquiry letter?~~
 - [ ] Submit! :tada:
