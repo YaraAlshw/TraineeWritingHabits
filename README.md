@@ -37,6 +37,7 @@
 - [x] Update citations (Freya)
 - [x] Have Mary edit draft
 - [x] Friendly review -- sent to Tian Guo
+- [ ] Incorporate suggested revisions
 - [ ] Reformat for Ecosphere
 - [ ] ~~Draft inquiry letter?~~
 - [ ] Submit! :tada:
