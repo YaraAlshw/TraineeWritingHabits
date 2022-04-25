@@ -24,7 +24,7 @@
 * [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
 
 ### Tasks left to do
-- [x] Upload career figure final edit
+- [ ] Upload model code
 - [x] Show group how to upload code to GitHub and update in R
 - [x] Ana upload figure code
 - [ ] Standardize figures (Freya and Ana)
