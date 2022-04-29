@@ -1,5 +1,13 @@
 #Copied from "covid-identity" Github repo by YAA on 4/29/2022. Will edit to remove non-relevant code
 
+#install packages if needed
+install.packages("viridis")
+install.packages("tm")
+install.packages("ggpubr")
+install.packages("rstanarm")
+install.packages("easystats", repos = "https://easystats.r-universe.dev")
+install.packages("logspline")
+
 # libraries
 library(ggplot2) 
 library(viridis)
@@ -13,10 +21,18 @@ library(easystats)
 library(tidyr)
 library(ggridges)
 library(glue)
+library(bayesplot)
+library(bayestestR)
+library(logspline)
+library(car)
 
 # load data
 survey <- read.csv('dataclean_Nov2.csv', header = TRUE)
 
+empty_as_na <- function(x){ #empty_as_na function did not exist so I found this code to create the function
+  if("factor" %in% class(x)) x <- as.character(x) ## since ifelse wont work with factors
+  ifelse(as.character(x)!="", x, NA)}
+  
 # replace empty cells with NA
 # transform all columns
 survey <- survey %>% mutate_each(funs(empty_as_na)) 
@@ -295,6 +311,7 @@ posterior_interval(
   model_bayes,
   prob = 0.9)
 
+#This is where writing habits ms analysis start
 # for all data combined how does writing time relate to pub total
 model_bayes3 <- stan_glm(hrs_wk_writing ~ trainingtot, data = survey)
 
@@ -319,7 +336,7 @@ print_md(posteriors, digits = 3)
 
 plot_title <- ggtitle("Posterior distributions",
                       "with medians and 80% intervals")
-mcmc_areas(posterior,
+mcmc_areas(posteriors,
            pars = c("graduate_yrs",
                     "postdoc_yrs",
                     "firstgen", 
@@ -329,7 +346,7 @@ mcmc_areas(posterior,
                     "ESL"),
            prob = 0.5) + plot_title
 
-mcmc_intervals(posterior, pars = c("graduate_yrs",
+mcmc_intervals(posteriors, pars = c("graduate_yrs",
                                    "postdoc_yrs",
                                    "firstgen",
                                    "female",
@@ -365,154 +382,6 @@ mcmc_intervals(posterior, pars = c("graduate_yrs",
                                    "BIPOCYes", 
                                    "conditionYes", 
                                    "ESL"))
-
-
-# relationship between COVID and identity ----
-
-# grad students ----
-# recode yes and no
-grads$COVIDimpact <- ifelse(grads$COVID_impact_writing == "Yes", 1, 0)
-grads$female <- ifelse(grads$male == 1, 0, 1)
-
-model_bayes <- stan_glm(COVIDimpact ~ 
-                          graduate_yrs +
-                          firstgen +
-                          female +
-                          BIPOC +
-                          condition +
-                          ESL,
-                          family = binomial,
-                        iter = 10000,
-                        warmup = 5000,
-                        data = grads, 
-                        seed = 111)
-
-loo(model_bayes)
-
-summary(model_bayes, digits = 2)
-posterior_interval(
-  model_bayes,
-  prob = 0.5)
-
-posteriors <- describe_posterior(model_bayes)
-# for a nicer table
-print_md(posteriors, digits = 3)
-
-# convert to probabilities
-logit2prob <- function(logit){
-  odds <- exp(logit)
-  prob <- odds / (1 + odds)
-  return(prob)
-}
-
-# grad school
-logit2prob(0.033)
-logit2prob(0.033*2)
-logit2prob(0.033*3)
-logit2prob(0.033*4)
-logit2prob(0.033*5)
-
-# first gen
-logit2prob(0.972)
-# female
-logit2prob(0.431)
-# BIPOC
-logit2prob(2.103)
-# condition
-logit2prob(0.355)
-# ESL
-logit2prob(-1.574)
-
-posterior <- as.matrix(model_bayes)
-
-plot_title <- ggtitle("Posterior distributions",
-                      "with medians and 80% intervals")
-mcmc_areas(posterior,
-           pars = c("graduate_yrs", 
-                    "firstgen", 
-                    "female",
-                    "BIPOC", 
-                    "condition", 
-                    "ESL"),
-           prob = 0.5) + plot_title
-
-COVIDgrads <- mcmc_intervals(posterior, pars = c("graduate_yrs", 
-                                   "firstgen",
-                                   "female",
-                                   "BIPOC",
-                                   "condition",
-                                   "ESL"))
-
-# postdocs ----
-# recode yes and no
-postdocs$COVIDimpact <- ifelse(postdocs$COVID_impact_writing == "Yes", 1, 0)
-postdocs$female <- ifelse(postdocs$male == 1, 0, 1)
-
-model_bayes <- stan_glm(COVIDimpact ~ 
-                         postdoc_yrs +
-                          firstgen +
-                          female +
-                          BIPOC +
-                          condition +
-                          ESL,
-                        family = binomial,
-                        iter = 10000,
-                        warmup = 5000,
-                        chains = 4, 
-                        data = postdocs, 
-                        seed = 111)
-
-summary(model_bayes, digits = 2)
-posterior_interval(
-  model_bayes,
-  prob = 0.5)
-
-posteriors <- describe_posterior(model_bayes)
-# for a nicer table
-print_md(posteriors, digits = 3)
-
-# convert to probabilities
-logit2prob <- function(logit){
-  odds <- exp(logit)
-  prob <- odds / (1 + odds)
-  return(prob)
-}
-
-# postdoc years
-logit2prob(0.269)
-logit2prob(0.269*2)
-logit2prob(0.269*3)
-logit2prob(0.269*4)
-# first gen
-logit2prob(0.39)
-# female
-logit2prob(0.693)
-# BIPOC
-logit2prob(0.528)
-# condition
-logit2prob(-1.222)
-# ESL
-logit2prob(-1.369)
-
-posterior <- as.matrix(model_bayes)
-
-plot_title <- ggtitle("Posterior distributions",
-                      "with medians and 80% intervals")
-mcmc_areas(posterior,
-           pars = c("postdoc_yrs", 
-                    "firstgen", 
-                    "female",
-                    "BIPOC", 
-                    "condition", 
-                    "ESL"),
-           prob = 0.5) + plot_title
-
-COVIDpostdocs <- mcmc_intervals(posterior, pars = c("postdoc_yrs",
-                                                    "firstgen",
-                                                 "female",
-                                                 "BIPOC",
-                                                 "condition",
-                                                 "ESL"))
 
 # graph of relationship total pubs and total training ----
 linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
@@ -581,9 +450,8 @@ summary(survey$review_word)
 
 # boxplots attitudes about writing and review ----
 # writing word connotation vs. time spent writing
-library(car)
 survey$writing_word <- as.factor(survey$writing_word)
-summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE))
+summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE)))
 boxplot(hrs_wk_writing ~ writing_word, data = survey)
 
 # writing tracking ----
@@ -613,8 +481,7 @@ attitude_model <- stan_glm(plan_writing ~ 1 + writing_word,
                            data = survey, 
                            family = binomial)
 
-library(bayestestR)
-library(logspline)
+
 describe_posterior(attitude_model, test = c("p_direction", "rope", "bayesfactor"))
 summary(attitude_model, digits = 3)
 posteriors <- posterior(attitude_model)
@@ -774,3 +641,4 @@ g2 <- ggplot()+
 g2
 
 View()
+
