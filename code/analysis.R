@@ -298,12 +298,12 @@ model_bayes <- stan_glm(pubtotal ~
                           female +
                           BIPOC +
                           condition +
-                          ESL 
+                          ESL, 
                         iter = 10000,
                         cores = 3,
                         chains = 4,
-                        warmup = 5000,
-                        data = postdocs, seed=111)
+                        warmup = 5000, 
+                        data= postdocs, seed=111)
 
 loo(model_bayes)
 summary(model_bayes, digits = 3)
@@ -311,7 +311,7 @@ posterior_interval(
   model_bayes,
   prob = 0.9)
 
-#This is where writing habits ms analysis start
+###-------This is where writing habits ms analysis start -Yara-----###
 # for all data combined how does writing time relate to pub total
 model_bayes3 <- stan_glm(hrs_wk_writing ~ trainingtot, data = survey)
 
@@ -453,6 +453,13 @@ summary(survey$review_word)
 survey$writing_word <- as.factor(survey$writing_word)
 summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE)))
 boxplot(hrs_wk_writing ~ writing_word, data = survey)
+
+#New analysis 5.3.2022
+# Analysis 4: Number of 1st author pubs vs. feelings about writing process
+summary((lm(firstauthor_pubs ~ writing_word, data = survey, na.rm = TRUE)))
+boxplot(firstauthor_pubs ~ writing_word, data = survey)
+
+
 
 # writing tracking ----
 boxplot(hrs_wk_writing ~ plan_writing, data = survey)
