@@ -7,6 +7,9 @@ install.packages("ggpubr")
 install.packages("rstanarm")
 install.packages("easystats", repos = "https://easystats.r-universe.dev")
 install.packages("logspline")
+install.packages("BayesFactor")
+install.packages("shinystan")
+
 
 # libraries
 library(ggplot2) 
@@ -25,6 +28,8 @@ library(bayesplot)
 library(bayestestR)
 library(logspline)
 library(car)
+library(BayesFactor) 
+library(shinystan)
 
 # load data
 survey <- read.csv('dataclean_Nov2.csv', header = TRUE)
@@ -302,16 +307,12 @@ bayestestR::describe_posterior(
 )
 
 model_loo <- loo(model_bayes2) #check if there are problems, values influencing the model
-
+summary(model_bayes2, digits = 3)
 launch_shinystan(model_bayes2)
 
-#report Rhat being lass than 1.01, record neff, want mean and median to be about the same, repor median and 95 CI
+#report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
 #multiple regression, can add random effect (stan_gmler), X ` predcitors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed)
 
-install.packages("shinystan")
-library(shinystan)
-
-summary(model_bayes2, digits = 3)
 
 model_bayes <- stan_glm(pubtotal ~ 
                           graduate_yrs +
@@ -565,7 +566,61 @@ pub_attitude <- stan_glm(pubtotal ~ writing_word, data = survey,
                          chains = 4)
 summary(pub_attitude, digits = 3)
 
-#Analysis 4====
+#Analysis 4: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
+
+#a) scientific writing word
+model_bayes4 <- stan_glm(pubtotal ~ 
+                           graduate_yrs +
+                           writing_word,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes4)
+
+# describe posteriors
+# 93% of posterior is negative
+bayestestR::describe_posterior(
+  model_bayes4,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+
+model_loo <- loo(model_bayes4) #check if there are problems, values influencing the model
+summary(model_bayes4, digits = 3)
+launch_shinystan(model_bayes4)
+
+#b) review process word
+model_bayes4b <- stan_glm(pubtotal ~ 
+                           graduate_yrs +
+                           review_word,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes4b)
+
+# describe posteriors
+# 93% of posterior is negative
+bayestestR::describe_posterior(
+  model_bayes4b,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+
+model_loo <- loo(model_bayes4b) #check if there are problems, values influencing the model
+summary(model_bayes4b, digits = 3)
+launch_shinystan(model_bayes4b)
+
+
 #writing attitude IS linked to first-author pubs for grads
 summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
 summary(lm(firstauthor_pubs ~ writing_word, data = grads)) # yes
@@ -672,15 +727,21 @@ g2
 
 View()
 
-
-#Analysis 5: Writing support groups==== try chi squared test
+#Analysis 5: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
-#equal probability for 
-summary(aov(lm(writing_support_group ~ writing_word, data = survey)))
-summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
-grad.aov <- aov(lm(pubtotal ~ writing_word, data = grads))
-TukeyHSD(grad.aov)
-summary(aov(lm(pubtotal ~ writing_word, data = postdocs)))
+#equal probability for the dist
+
+x <- xtabs( ~ writing_word + writing_support_group, survey)
+x
+survey$writing_support_group <- as.factor(survey$writing_support_group)
+
+x2 <- xtabs( ~ review_word + writing_support_group, survey)
+x2
+
+#Bayesian chi-squared
+contingencyTableBF(x, sampleType = "poisson") #odds for alt hypothesis is 0.17%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
+
+contingencyTableBF(x2, sampleType = "poisson") #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
 
 
 #Analysis 6: pubs total and Writing support groups====
@@ -690,3 +751,29 @@ summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
 grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
 TukeyHSD(grad.aov)
 summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
+
+
+model_bayes5 <- stan_glm(pubtotal ~ 
+                           graduate_yrs +
+                           writing_support_group,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes5)
+
+# describe posteriors
+# 93% of posterior is negative
+bayestestR::describe_posterior(
+  model_bayes5,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+
+model_loo <- loo(model_bayes5) #check if there are problems, values influencing the model
+summary(model_bayes5, digits = 3)
+launch_shinystan(model_bayes5)
