@@ -289,7 +289,29 @@ model_bayes2 <- stan_glm(pubtotal ~
                         warmup = 5000,
                         data= grads, seed=111)
 
-summary(model_bayes2)
+plot(model_bayes2)
+
+# describe posteriors
+# 93% of posterior is negative
+bayestestR::describe_posterior(
+  model_bayes2,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+
+model_loo <- loo(model_bayes2) #check if there are problems, values influencing the model
+
+launch_shinystan(model_bayes2)
+
+#report Rhat being lass than 1.01, record neff, want mean and median to be about the same, repor median and 95 CI
+#multiple regression, can add random effect (stan_gmler), X ` predcitors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed)
+
+install.packages("shinystan")
+library(shinystan)
+
+summary(model_bayes2, digits = 3)
 
 model_bayes <- stan_glm(pubtotal ~ 
                           graduate_yrs +
@@ -455,7 +477,7 @@ summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE)))
 boxplot(hrs_wk_writing ~ writing_word, data = survey)
 
 #New analysis 5.3.2022
-# Analysis 4: Number of 1st author pubs vs. feelings about writing process
+# Analysis 4: Number of 1st author pubs vs. feelings about writing process -- repeated down below
 summary((lm(firstauthor_pubs ~ writing_word, data = survey, na.rm = TRUE)))
 boxplot(firstauthor_pubs ~ writing_word, data = survey)
 
@@ -543,7 +565,8 @@ pub_attitude <- stan_glm(pubtotal ~ writing_word, data = survey,
                          chains = 4)
 summary(pub_attitude, digits = 3)
 
-# writing attitude IS linked to first-author pubs for grads
+#Analysis 4====
+#writing attitude IS linked to first-author pubs for grads
 summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
 summary(lm(firstauthor_pubs ~ writing_word, data = grads)) # yes
 summary(lm(firstauthor_pubs ~ writing_word, data = postdocs)) #nope
@@ -649,3 +672,21 @@ g2
 
 View()
 
+
+#Analysis 5: Writing support groups==== try chi squared test
+#bayesian chi squared test
+#equal probability for 
+summary(aov(lm(writing_support_group ~ writing_word, data = survey)))
+summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+grad.aov <- aov(lm(pubtotal ~ writing_word, data = grads))
+TukeyHSD(grad.aov)
+summary(aov(lm(pubtotal ~ writing_word, data = postdocs)))
+
+
+#Analysis 6: pubs total and Writing support groups====
+#try stan_glm model
+summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
+summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
+TukeyHSD(grad.aov)
+summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
