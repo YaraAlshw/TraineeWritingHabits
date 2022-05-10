@@ -31,10 +31,10 @@ library(car)
 library(BayesFactor) 
 library(shinystan)
 
-# load data
-survey <- read.csv('dataclean_Nov2.csv', header = TRUE)
+# Load data ====
+survey <- read.csv("data/dataclean_Nov2.csv", header = TRUE)
 
-empty_as_na <- function(x){ #empty_as_na function did not exist so I found this code to create the function
+empty_as_na <- function(x){ # empty_as_na function did not exist so I found this code to create the function
   if("factor" %in% class(x)) x <- as.character(x) ## since ifelse wont work with factors
   ifelse(as.character(x)!="", x, NA)}
   
@@ -66,91 +66,12 @@ survey$pubtotal <- rowSums(survey[,c("firstauthor_pubs", "coauthor_pubs")], na.r
 # create a new column for career stage
 survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
 
-# make two dataframes for grads and postdocs ----
+# Make two dataframes for grads and postdocs ----
 grads <- subset(survey, is.na(survey$postdoc_yrs))
 postdocs <- subset(survey, !is.na(survey$postdoc_yrs))
 
-# career interests ----
-# make a career database
-grads2 <- gather(grads[,c(11:17)], factor_key=TRUE)
-postdocs2 <- gather(postdocs[,c(11:17)], factor_key = TRUE)
-survey2 <- gather(survey[,c(11:17)], factor_key = TRUE)
-grads2 %>% dplyr::group_by(key)%>%
-  dplyr::summarise(mean= mean(value, na.rm = TRUE), 
-            sd= sd(value,na.rm = TRUE), 
-            max = max(value, na.rm = TRUE),
-            min = min(value, na.rm = TRUE))
 
-postdocs2 %>% dplyr::group_by(key)%>%
-  dplyr::summarise(mean= mean(value, na.rm = TRUE), 
-                   sd= sd(value,na.rm = TRUE), 
-                   max = max(value, na.rm = TRUE),
-                   min = min(value, na.rm = TRUE))
-
-
-
-
-# colored by density function
-all_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), data = survey2) +
-  stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
-  scale_fill_gradientn(name = "Tail probability",
-                         colours = c("#405364","#585b74","#6c5b7b","#966480","#c6798f", "#df858e", "#eda09c"),
-                         values = c(1, 0.83, 0.66, 0.49, 0.32, 0.15, 0)) +
-  theme_classic(base_size = 16) +
-  xlim(0,10) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  #scale_fill_viridis_c(name = "Tail probability", direction = -1) +
-  ylab("Career path") +
-  xlab("Interest level") +
-  scale_y_discrete(labels = c('Teaching','R2 or R3',
-                              'R1', 'Government',
-                              'Industry or Data Science',
-                              'Communication',
-                              'NGO'))
-
-ggsave(all_career, filename = glue("figures/career_interest_figure_{Sys.Date()}.png"), width = 7, height = 5, dpi=300)
-
-
-grad_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), data = grads2) +
-  #geom_density_ridges(scale = 1.5, alpha = 0.7, jittered_points = FALSE) +
-  stat_density_ridges(geom = "density_ridges_gradient", calc_ecdf = TRUE) +
-  theme_classic(base_size = 14) +
-  xlim(0,10) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  scale_fill_viridis_c(name = "Tail probability", direction = -1) +
-  ylab("Career path") +
-  xlab("Interest level") +
-  theme(legend.position = "none")
-
-postdoc_career <- ggplot(aes(x = value, y = key, fill = key), data = postdocs2) +
-  geom_density_ridges(scale = 1.5, stat = "identity", alpha = 0.7, jittered_points = FALSE) +
-  theme_classic(base_size = 14) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  scale_fill_viridis_d() +
-  ylab("Career path") +
-  xlab("Interest level") +
-  theme(legend.position = "none")
-
-ggarrange(grad_career +
-            theme(axis.text.y = element_blank(),
-                  axis.ticks.y = element_blank(),
-                  axis.title.y = element_blank() ),
-          postdoc_career +
-            theme(axis.text.y = element_blank(),
-                  axis.ticks.y = element_blank(),
-                  axis.title.y = element_blank() ),
-          ncol = 2,
-          align = "hv",
-          legend = "none")
-
-
-
-
-
-# identity ----
+# Demographics ----
 survey %>%
   group_by(stage) %>%
   summarize(avgfirst = mean(firstauthor_pubs, na.rm = TRUE),
@@ -187,226 +108,71 @@ survey %>%
   group_by(BIPOC) %>%
   summarize(n())
 
-
-# publishing history
-first_author <- ggplot(aes(x = firstauthor_pubs, fill = stage), data = survey) +
-  geom_density(alpha = 0.2) + 
-  theme_classic(base_size = 14) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  scale_fill_viridis_d() +
-  xlab("Density") +
-  xlab("First-authored publications") +
-  xlim(c(0,20))
-
-first_author_v2 <- survey %>%
-  ggplot( aes(x=firstauthor_pubs, fill=stage)) +
-  geom_histogram( color="#e9ecef", alpha=0.6, position = 'identity') +
-  scale_fill_manual(values=c("#69b3a2", "#404080")) +
-  theme_classic(base_size = 14) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  labs(fill="") +
-  xlim(c(0,20)) +
-  xlab("first-authored publications")
-
-
-co_author <- ggplot(aes(x = coauthor_pubs, fill = stage), data = survey) +
-  geom_density(alpha = 0.2) + theme_bw(base_size = 14) +
-  xlab("Density") +
-  scale_fill_viridis_d() +
-  theme_classic(base_size = 14) +
-  theme(panel.border = element_rect(fill = NA, size = 1),
-        axis.line = element_blank()) +
-  xlab("Co-authored publications") +
-  xlim(c(0,20))
-
-co_author_v2 <- survey %>%
-  ggplot(aes(x = coauthor_pubs, fill = stage)) +
-  geom_histogram(color = "#e9ecef",
-                 alpha = 0.6,
-                 position = 'identity') +
-  scale_fill_manual(values = c("#69b3a2", "#404080")) +
-  theme_bw(base_size = 12) +
-  labs(fill = "") +
-  xlim(c(0, 20)) +
-  xlab("co-authored publications")
-
-ggarrange(labels = "AUTO",
-          align = "hv",
-          first_author, 
-          co_author, 
-          ncol=1, 
-          nrow=2, 
-          common.legend = TRUE, 
-          legend="bottom")
-
-
-
-
-# linear models comparing pubs vs. total training ----
-summary(lm(pubtotal ~ trainingtot, data = survey))
-summary(lm(firstauthor_pubs ~ trainingtot, data = survey))
-summary(lm(coauthor_pubs ~ trainingtot, data = survey))
-
-# linear models comparing pubs vs. grad + postdoc ----
-# maybe analyze postdocs and grads separately?
-# for those with postdoc experience, grad yrs didn't matter
-summary(lm(pubtotal ~ graduate_yrs + postdoc_yrs, data = survey))
-summary(lm(firstauthor_pubs ~ graduate_yrs + postdoc_yrs, data = survey))
-summary(lm(coauthor_pubs ~ graduate_yrs + postdoc_yrs, data = survey))
-
-# linear models comparing pubs vs. grad training ----
-summary(lm(pubtotal ~ graduate_yrs, data = survey))
-summary(lm(firstauthor_pubs ~ graduate_yrs, data = survey))
-summary(lm(coauthor_pubs ~ graduate_yrs, data = survey))
-
-# linear models comparing pubs vs. postdoc training ----
-summary(lm(pubtotal ~ postdoc_yrs, data = survey))
-summary(lm(firstauthor_pubs ~ postdoc_yrs, data = survey))
-summary(lm(coauthor_pubs ~ postdoc_yrs, data = survey))
-
-# for grads, only yrs in graduate school matters
-# same for first and co-author pubs separately
-summary(lm(pubtotal ~
-             graduate_yrs +
-             first_gen +
-             gender_identity +
-             BIPOC +
-             condition +
-             first_language_english +
-             hrs_wk_writing, 
-           data = grads), na.rm = TRUE)
-
-# grads and postdocs vs. identity in publishing
-
-model_bayes2 <- stan_glm(pubtotal ~ 
-                          graduate_yrs +
-                          firstgen +
-                          female +
-                          BIPOC +
-                          condition +
-                          ESL +
-                          hrs_wk_writing, 
-                        iter = 10000,
-                        cores = 3,
-                        chains = 4,
-                        warmup = 5000,
-                        data= grads, seed=111)
-
-plot(model_bayes2)
-
-# describe posteriors
-# 93% of posterior is negative
-bayestestR::describe_posterior(
-  model_bayes2,
-  effects = "all",
-  component = "all",
-  test = c("p_direction", "p_significance"),
-  centrality = "all"
-)
-
-model_loo <- loo(model_bayes2) #check if there are problems, values influencing the model
-summary(model_bayes2, digits = 3)
-launch_shinystan(model_bayes2)
-
 #report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
 #multiple regression, can add random effect (stan_gmler), X ` predcitors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed)
 
+###-------This is where writing habits ms analysis start -Yara-----###
 
-model_bayes <- stan_glm(pubtotal ~ 
-                          graduate_yrs +
-                          postdoc_yrs +
-                          firstgen +
-                          female +
-                          BIPOC +
-                          condition +
-                          ESL, 
+#Analysis 1: pubtotal vs. time spent writing ====
+#Q for Freya: do we add any of the identity variables?
+#figure out if we need to analyze by grad and post docs? or ok to keep all together
+model_bayes1a <- stan_glm(pubtotal ~ 
+                          hrs_wk_writing,
                         iter = 10000,
                         cores = 3,
                         chains = 4,
                         warmup = 5000, 
-                        data= postdocs, seed=111)
+                        data= survey, seed=111) #All data
 
-loo(model_bayes)
-summary(model_bayes, digits = 3)
+model_bayes1b <- stan_glm(pubtotal ~ 
+                          hrs_wk_writing,
+                        iter = 10000,
+                        cores = 3,
+                        chains = 4,
+                        warmup = 5000, 
+                        data= grads, seed=111) #All data
+
+model_bayes1c <- stan_glm(pubtotal ~ 
+                          hrs_wk_writing,
+                        iter = 10000,
+                        cores = 3,
+                        chains = 4,
+                        warmup = 5000, 
+                        data= postdocs, seed=111) #All data
+
+loo(model_bayes1a)
+prior_summary(model_bayes1a)
+summary(model_bayes1a, digits = 3)
 posterior_interval(
-  model_bayes,
+  model_bayes1a,
+  prob = 0.9)
+plot(model_bayes1a)
+
+launch_shinystan(model_bayes1a)
+
+loo(model_bayes1b)
+summary(model_bayes1b, digits = 3)
+posterior_interval(
+  model_bayes1b,
   prob = 0.9)
 
-###-------This is where writing habits ms analysis start -Yara-----###
+loo(model_bayes1c)
+summary(model_bayes1c, digits = 3)
+posterior_interval(
+  model_bayes1c,
+  prob = 0.9)
+
 # for all data combined how does writing time relate to pub total
-model_bayes3 <- stan_glm(hrs_wk_writing ~ trainingtot, data = survey)
+model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, data = survey)
+summary(model_bayesx, digits = 3)
+posteriorsx <- describe_posterior(model_bayesx)
 
-model_bayes3 <- stan_glm(pubtotal ~ 
-                           #graduate_yrs +
-                           #postdoc_yrs +
-                           firstgen +
-                           female +
-                           BIPOC +
-                           condition +
-                           ESL +
-                           hrs_wk_writing, 
-                         iter = 10000,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000,
-                         data= survey, seed=111)
-
-posteriors <- describe_posterior(model_bayes3)
 # for a nicer table
-print_md(posteriors, digits = 3)
+print_md(posteriorsx, digits = 3)
 
-plot_title <- ggtitle("Posterior distributions",
-                      "with medians and 80% intervals")
-mcmc_areas(posteriors,
-           pars = c("graduate_yrs",
-                    "postdoc_yrs",
-                    "firstgen", 
-                    "female",
-                    "BIPOC", 
-                    "condition", 
-                    "ESL"),
-           prob = 0.5) + plot_title
+posteriorx <- as.matrix(model_bayesx)
 
-mcmc_intervals(posteriors, pars = c("graduate_yrs",
-                                   "postdoc_yrs",
-                                   "firstgen",
-                                   "female",
-                                   "BIPOC",
-                                   "condition",
-                                   "ESL"))
-                  
-
-summary(model_bayes, digits = 2)
-posteriors <- describe_posterior(model_bayes)
-# for a nicer table
-print_md(posteriors, digits = 2)
-
-posterior <- as.matrix(model_bayes)
-
-plot_title <- ggtitle("Posterior distributions",
-                      "with medians and 80% intervals")
-mcmc_areas(posterior,
-           pars = c("graduate_yrs", 
-                    "postdoc_yrs",
-                    "first_genYes", 
-                    "gender_identityMale", 
-                    "gender_identityNon-binary/third gender/other",
-                    "BIPOCYes", 
-                    "conditionYes", 
-                    "first_language_englishYes"),
-           prob = 0.8) + plot_title
-
-mcmc_intervals(posterior, pars = c("graduate_yrs", 
-                                   "postdoc_yrs", 
-                                   "first_genYes", 
-                                   "male", 
-                                   "BIPOCYes", 
-                                   "conditionYes", 
-                                   "ESL"))
-
-# graph of relationship total pubs and total training ----
+# graph of relationship total pubs and total training
 linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
   geom_point(aes(size = postdoc_yrs), alpha = 0.5) +
   scale_fill_viridis() +
@@ -414,21 +180,17 @@ linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
   xlab("Total yrs as trainee (grad + postdoc)") +
   ylab("Total publications")
 
-summary(lm(pubtotal ~ trainingtot, data = survey))
-summary(lm(pubtotal ~ trainingtot, data = grads))
-summary(lm(pubtotal ~ trainingtot, data = postdocs))
+# Correlation between pubtotal and total training years
 cor(survey$pubtotal, survey$trainingtot, method = "pearson")
 cor(survey$pubtotal, survey$trainingtot, method = "spearman")
 
-# relationship first author pubs and total training ----
+# relationship first author pubs and total training 
 linpubs <- ggplot(aes(x = trainingtot, y = firstauthor_pubs), data = survey) +
   geom_point(pch = 21, aes(size = postdoc_yrs, fill = postdoc_yrs), alpha = 0.5) +
   scale_fill_viridis() +
   theme_bw(base_size = 14) +
   xlab("Total yrs as trainee (grad + postdoc)") +
   ylab("First-author publications")
-
-summary(lm(firstauthor_pubs ~ trainingtot, data = survey))
 
 # does writing more mean more papers? YES
 writepubs <- ggplot(aes(x = hrs_wk_writing, y = pubtotal), data = survey) +
@@ -446,77 +208,109 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
   xlab("Yrs as trainee")
 
 # hrs writing per week and training
-summary(lm(hrs_wk_writing ~ trainingtot, data = survey)) #yes - more training = more time
-summary(lm(hrs_wk_writing ~ trainingtot, data = grads)) #yes - more training = more time
-summary(lm(hrs_wk_writing ~ trainingtot, data = postdocs)) #no - not increasing writing time with training
+#summary(lm(hrs_wk_writing ~ trainingtot, data = survey)) #yes - more training = more time
+#summary(lm(hrs_wk_writing ~ trainingtot, data = grads)) #yes - more training = more time
+#summary(lm(hrs_wk_writing ~ trainingtot, data = postdocs)) #no - not increasing writing #time with training
 
-# total writing time and first author pubs
-summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = survey)) #yes
-summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = grads)) #no
-summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = postdocs)) #marginal
+## total writing time and first author pubs
+#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = survey)) #yes
+#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = grads)) #no
+#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = postdocs)) #marginal
 
-# hrs per week and coauthor pubs
-summary(lm(coauthor_pubs ~ hrs_wk_writing, data = survey)) #no
-summary(lm(coauthor_pubs ~ hrs_wk_writing, data = grads)) #yes
-summary(lm(coauthor_pubs ~ hrs_wk_writing, data = postdocs)) #no
+## hrs per week and coauthor pubs
+#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = survey)) #no
+#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = grads)) #yes
+#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = postdocs)) #no
 
-# hrs per week and all pubs
-summary(lm(pubtotal ~ hrs_wk_writing, data = survey)) #yes
-summary(lm(pubtotal ~ hrs_wk_writing, data = grads)) #yes
-summary(lm(pubtotal ~ hrs_wk_writing, data = postdocs)) #no
+## hrs per week and all pubs
+#summary(lm(pubtotal ~ hrs_wk_writing, data = survey)) #yes
+#summary(lm(pubtotal ~ hrs_wk_writing, data = grads)) #yes
+#summary(lm(pubtotal ~ hrs_wk_writing, data = postdocs)) #no
 
-# made a word cloud for writing attitudes ----
 
-# attitudes toward science writing and review
+# Attitudes toward science writing and review 
 summary(survey$writing_word)
 summary(survey$review_word)
 
-# boxplots attitudes about writing and review ----
+# Boxplots attitudes about writing and review 
 # writing word connotation vs. time spent writing
 survey$writing_word <- as.factor(survey$writing_word)
 summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE)))
 boxplot(hrs_wk_writing ~ writing_word, data = survey)
 
 #New analysis 5.3.2022
-# Analysis 4: Number of 1st author pubs vs. feelings about writing process -- repeated down below
-summary((lm(firstauthor_pubs ~ writing_word, data = survey, na.rm = TRUE)))
-boxplot(firstauthor_pubs ~ writing_word, data = survey)
+# Analysis 4: Number of 1st author pubs vs. feelings about writing process -- repeated down below in Bayesian
+#summary((lm(firstauthor_pubs ~ writing_word, data = survey, na.rm = TRUE)))
+#boxplot(firstauthor_pubs ~ writing_word, data = survey)
 
+# writing tracking 
+#boxplot(hrs_wk_writing ~ plan_writing, data = survey)
+#summary(lm(hrs_wk_writing ~ plan_writing, data = survey, na.rm = TRUE))
 
-
-# writing tracking ----
-boxplot(hrs_wk_writing ~ plan_writing, data = survey)
-summary(lm(hrs_wk_writing ~ plan_writing, data = survey, na.rm = TRUE))
 # plan writing model
-plan_model <- stan_glm(hrs_wk_writing ~ plan_writing, data = survey)
+plan_model <- stan_glm(hrs_wk_writing ~ plan_writing, 
+                       iter = 10000,
+                       cores = 3,
+                       chains = 4,
+                       warmup = 5000, data = survey)
+
 summary(plan_model)
 posteriors <- describe_posterior(plan_model)
 # for a nicer table
 print_md(posteriors, digits = 3)
 
-# time per week spent writing and attitude toward writing
-# plan writing model
-attitude_model <- stan_glm(hrs_wk_writing ~ writing_word, data = survey)
-summary(attitude_model)
-posteriors <- describe_posterior(attitude_model)
-# for a nicer table
-print_md(posteriors, digits = 3)
 
-attitude_model <- lm(hrs_wk_writing ~ writing_word, data = survey)
-summary(attitude_model)
-# writing attitude vs. plan writing ----
 
+# Analysis 2: writing attitude vs. plan writing ====
+#2A scientific writing word
 survey$plan_writing <- as.numeric(survey$plan_writing)
-attitude_model <- stan_glm(plan_writing ~ 1 + writing_word, 
-                           data = survey, 
+plan_model <- stan_glm(plan_writing ~ 1 + writing_word, #q for Freya: what is this "1"?
+                           iter = 10000,
+                           cores = 3,
+                           chains = 4,
+                           warmup = 5000, 
+                           data = survey,
                            family = binomial)
 
+describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
+summary(plan_model, digits = 3)
+posteriors_plan_model <- posterior(plan_model)
 
-describe_posterior(attitude_model, test = c("p_direction", "rope", "bayesfactor"))
-summary(attitude_model, digits = 3)
-posteriors <- posterior(attitude_model)
+loo(plan_model)
+prior_summary(plan_model)
+summary(plan_model, digits = 3)
+posterior_interval(
+  plan_model,
+  prob = 0.9)
+plot(plan_model)
+
 boxplot(hrs_wk_writing ~ writing_word, data = survey)
 
+#2B: review word
+plan_model2 <- stan_glm(plan_writing ~ 1 + review_word, #q for Freya: what is this "1"?
+                       iter = 10000,
+                       cores = 3,
+                       chains = 4,
+                       warmup = 5000, 
+                       data = survey,
+                       family = binomial)
+
+describe_posterior(plan_model2, test = c("p_direction", "rope", "bayesfactor"))
+summary(plan_model2, digits = 3)
+posteriors_plan_model2 <- posterior(plan_model2)
+
+loo(plan_model2)
+prior_summary(plan_model2)
+summary(plan_model2, digits = 3)
+posterior_interval(
+  plan_model2,
+  prob = 0.9)
+plot(plan_model2)
+
+boxplot(hrs_wk_writing ~ review_word, data = survey)
+
+
+#Q for Freya: did we end up using this function for anything?
 # convert to probabilities
 logit2prob <- function(logit){
   odds <- exp(logit)
@@ -529,48 +323,48 @@ logit2prob(0.365)
 logit2prob(0.064)
 logit2prob(-0.824)
 
+# Analysis 3: time per week spent writing and attitude toward writing and review ====
+# plan writing model
+attitude_model1 <- stan_glm(hrs_wk_writing ~ writing_word, 
+                            iter = 10000,
+                            cores = 3,
+                            chains = 4,
+                            warmup = 5000, data = survey)
+summary(attitude_model1)
+posteriors_attitude_model1 <- describe_posterior(attitude_model1)
+loo(attitude_model1)
+prior_summary(attitude_model1)
+summary(attitude_model1, digits = 3)
+posterior_interval(
+  attitude_model1,
+  prob = 0.9)
+plot(attitude_model1)
+# for a nicer table
+print_md(posteriors_attitude_model1, digits = 3)
 
-# writing success (i.e., pubs) linked to feelings about writing ----
-writing_box <- ggplot(aes(x = writing_word, y = pubtotal), data = survey) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about writing process") +
-  ylab("Total publications")
 
-ggplot(aes(y = writing_word, x = stage, fill = stage), data = survey) +
-  geom_boxplot() + 
-  theme_bw(base_size = 14)
+attitude_model2 <- stan_glm(hrs_wk_writing ~ review_word,
+                            iter = 10000,
+                            cores = 3,
+                            chains = 4,
+                            warmup = 5000, data = survey)
+summary(attitude_model2)
+posteriors_attitude_model2 <- describe_posterior(attitude_model2)
+loo(attitude_model2)
+prior_summary(attitude_model2)
+summary(attitude_model2, digits = 3)
+posterior_interval(
+  attitude_model2,
+  prob = 0.9)
+plot(attitude_model2)
 
-ggplot(survey, aes(fill = writing_word, x = stage)) + 
-  geom_bar(position="stack", stat="identity")
-
-writing_box <- ggplot(aes(y = pubtotal, x = writing_word, fill = stage),
-                      data = survey) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about writing process") +
-  ylab("Total publications")
-
-ggplot(aes(x = review_word, y = pubtotal, fill = stage), 
-       data = survey) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about peer review") +
-  ylab("Total publications")
-
-# all data and grads yes, postdocs alone = no
-summary(aov(lm(pubtotal ~ writing_word, data = survey)))
-summary(aov(lm(pubtotal ~ writing_word, data = grads)))
-grad.aov <- aov(lm(pubtotal ~ writing_word, data = grads))
-TukeyHSD(grad.aov)
-summary(aov(lm(pubtotal ~ writing_word, data = postdocs))) # not for postdocs
-
-pub_attitude <- stan_glm(pubtotal ~ writing_word, data = survey,
-                         chains = 4)
-summary(pub_attitude, digits = 3)
+# for a nicer table
+print_md(posteriors_attitude_model2, digits = 3)
 
 #Analysis 4: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
 #a) scientific writing word
 model_bayes4 <- stan_glm(pubtotal ~ 
-                           graduate_yrs +
                            writing_word,
                          iter = 10000,
                          cores = 3,
@@ -622,15 +416,29 @@ launch_shinystan(model_bayes4b)
 
 
 #writing attitude IS linked to first-author pubs for grads
-summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
-summary(lm(firstauthor_pubs ~ writing_word, data = grads)) # yes
-summary(lm(firstauthor_pubs ~ writing_word, data = postdocs)) #nope
+#summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
+#summary(lm(firstauthor_pubs ~ writing_word, data = grads)) # yes
+#summary(lm(firstauthor_pubs ~ writing_word, data = postdocs)) #nope
 
-# writing attitude not linked to co-author pubs
-summary(lm(coauthor_pubs ~ writing_word, data = survey)) # no
-summary(lm(coauthor_pubs ~ writing_word, data = grads)) # yes
-summary(lm(coauthor_pubs ~ writing_word, data = postdocs)) # no
+## writing attitude not linked to co-author pubs
+#summary(lm(coauthor_pubs ~ writing_word, data = survey)) # no
+#summary(lm(coauthor_pubs ~ writing_word, data = grads)) # yes
+#summary(lm(coauthor_pubs ~ writing_word, data = postdocs)) # no
 
+# peer review attitude not linked to total pubs
+#summary(lm(pubtotal ~ review_word, data = survey))
+#summary(lm(pubtotal ~ review_word, data = grads))
+#summary(lm(pubtotal ~ review_word, data = postdocs))
+
+## peer review attitude not linked to first-author pubs
+#summary(lm(firstauthor_pubs ~ review_word, data = survey))
+#summary(lm(firstauthor_pubs ~ review_word, data = grads))
+#summary(lm(firstauthor_pubs ~ review_word, data = postdocs))
+
+## peer review attitude not linked to co-author pubs
+#summary(lm(coauthor_pubs ~ review_word, data = survey))
+#summary(lm(coauthor_pubs ~ review_word, data = grads))
+#summary(lm(coauthor_pubs ~ review_word, data = postdocs))
 
 # writing success (i.e., pubs) NOT linked to peer-review attitude
 review_box <- ggplot(aes(x = review_word, y = pubtotal, fill = stage), 
@@ -639,34 +447,34 @@ review_box <- ggplot(aes(x = review_word, y = pubtotal, fill = stage),
   xlab("Feelings about peer review") +
   ylab("Total publications")
 
+writing_box <- ggplot(aes(y = pubtotal, x = writing_word, fill = stage),
+                      data = na.omit(survey[,c("pubtotal", "writing_word", "stage")])) +
+  geom_boxplot() + theme_bw(base_size = 14) +
+  xlab("Feelings about writing process") +
+  ylab("Total publications")
+
+ggplot(aes(y = writing_word, x = stage, fill = stage), data = survey) +
+  geom_boxplot() + 
+  theme_bw(base_size = 14)
+
+ggplot(survey, aes(fill = writing_word, x = stage)) + 
+  geom_bar(position="stack", stat="identity")
+
+ggplot(aes(x = review_word, y = pubtotal, fill = stage), 
+       data = survey) +
+  geom_boxplot() + theme_bw(base_size = 14) +
+  xlab("Feelings about peer review") +
+  ylab("Total publications")
+
 ggarrange(common.legend = TRUE,
           writing_box, 
-         review_box, 
-         align = "hv", 
-         nrow = 2,
-         labels = "AUTO"
-        )
+          review_box, 
+          align = "hv", 
+          nrow = 2,
+          labels = "AUTO"
+)
 
-# peer review attitude not linked to total pubs
-summary(lm(pubtotal ~ review_word, data = survey))
-summary(lm(pubtotal ~ review_word, data = grads))
-summary(lm(pubtotal ~ review_word, data = postdocs))
-
-# peer review attitude not linked to first-author pubs
-summary(lm(firstauthor_pubs ~ review_word, data = survey))
-summary(lm(firstauthor_pubs ~ review_word, data = grads))
-summary(lm(firstauthor_pubs ~ review_word, data = postdocs))
-
-# peer review attitude not linked to co-author pubs
-summary(lm(coauthor_pubs ~ review_word, data = survey))
-summary(lm(coauthor_pubs ~ review_word, data = grads))
-summary(lm(coauthor_pubs ~ review_word, data = postdocs))
-
-
-
-
-
-
+# Writing groups section ====
 # make writing groups figure
 # if else hell
 survey$GoalSetting <- ifelse(survey[,39]=="Improved",1, ifelse(survey[,39]=="No Change", 0, -1))
@@ -729,7 +537,7 @@ View()
 
 #Analysis 5: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
-#equal probability for the dist
+#equal probability for all levels (i.e., null hypothesis is there's no difference)
 
 x <- xtabs( ~ writing_word + writing_support_group, survey)
 x
@@ -746,15 +554,14 @@ contingencyTableBF(x2, sampleType = "poisson") #odds for alt hypothesis is 0.18%
 
 #Analysis 6: pubs total and Writing support groups====
 #try stan_glm model
-summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
-summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
-grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
-TukeyHSD(grad.aov)
-summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
+#summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
+#summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+#grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
+#TukeyHSD(grad.aov)
+#summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
 
 
-model_bayes5 <- stan_glm(pubtotal ~ 
-                           graduate_yrs +
+model_bayes6 <- stan_glm(pubtotal ~ 
                            writing_support_group,
                          iter = 10000,
                          cores = 3,
@@ -762,18 +569,22 @@ model_bayes5 <- stan_glm(pubtotal ~
                          warmup = 5000,
                          data= survey, seed=111)
 
-plot(model_bayes5)
+plot(model_bayes6)
 
-# describe posteriors
-# 93% of posterior is negative
 bayestestR::describe_posterior(
-  model_bayes5,
+  model_bayes6,
   effects = "all",
   component = "all",
   test = c("p_direction", "p_significance"),
   centrality = "all"
 )
+summary(model_bayes6, digits = 3)
+posteriors_model_bayes6 <- posterior(model_bayes6)
 
-model_loo <- loo(model_bayes5) #check if there are problems, values influencing the model
-summary(model_bayes5, digits = 3)
-launch_shinystan(model_bayes5)
+loo(model_bayes6) #check if there are problems, values influencing the model
+prior_summary(model_bayes6)
+summary(model_bayes6, digits = 3)
+posterior_interval(
+  model_bayes6,
+  prob = 0.9)
+
