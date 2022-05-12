@@ -116,29 +116,18 @@ survey %>%
 #Analysis 1: pubtotal vs. time spent writing ====
 #Q for Freya: do we add any of the identity variables?
 #figure out if we need to analyze by grad and post docs? or ok to keep all together
+
 model_bayes1a <- stan_glm(pubtotal ~ 
                           hrs_wk_writing,
                         iter = 10000,
                         cores = 3,
                         chains = 4,
                         warmup = 5000, 
-                        data= survey, seed=111) #All data
-
-model_bayes1b <- stan_glm(pubtotal ~ 
-                          hrs_wk_writing,
-                        iter = 10000,
-                        cores = 3,
-                        chains = 4,
-                        warmup = 5000, 
-                        data= grads, seed=111) #All data
-
-model_bayes1c <- stan_glm(pubtotal ~ 
-                          hrs_wk_writing,
-                        iter = 10000,
-                        cores = 3,
-                        chains = 4,
-                        warmup = 5000, 
-                        data= postdocs, seed=111) #All data
+                        data= survey, seed=111) #All data and total pub
+#interpret
+describe_posterior(model_bayes1a, test = c("p_direction", "rope", "bayesfactor"))
+summary(model_bayes1a, digits = 3)
+posteriors_model_bayes1a <- posterior(model_bayes1a)
 
 loo(model_bayes1a)
 prior_summary(model_bayes1a)
@@ -148,26 +137,60 @@ posterior_interval(
   prob = 0.9)
 plot(model_bayes1a)
 
-launch_shinystan(model_bayes1a)
 
-loo(model_bayes1b)
-summary(model_bayes1b, digits = 3)
-posterior_interval(
-  model_bayes1b,
-  prob = 0.9)
+model_bayes2a <- stan_glm(firstauthor_pubs ~ 
+                            hrs_wk_writing,
+                          iter = 10000,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000, 
+                          data= survey, seed=111) #All data
+#interpret
+describe_posterior(model_bayes2a, test = c("p_direction", "rope", "bayesfactor"))
+summary(model_bayes2a, digits = 3)
+posteriors_model_bayes2a <- posterior(model_bayes2a)
 
-loo(model_bayes1c)
-summary(model_bayes1c, digits = 3)
+loo(model_bayes2a)
+prior_summary(model_bayes2a)
+summary(model_bayes2a, digits = 3)
 posterior_interval(
-  model_bayes1c,
+  model_bayes2a,
   prob = 0.9)
+plot(model_bayes2a)
+
+model_bayes3a <- stan_glm(coauthor_pubs ~ 
+                            hrs_wk_writing,
+                          iter = 10000,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000, 
+                          data= survey, seed=111) #All data
+
+#interpret
+describe_posterior(model_bayes3a, test = c("p_direction", "rope", "bayesfactor")) 
+summary(model_bayes3a, digits = 3)
+posteriors_model_bayes3a <- posterior(model_bayes3a)
+
+loo(model_bayes3a)
+prior_summary(model_bayes3a)
+summary(model_bayes3a, digits = 3)
+posterior_interval(
+  model_bayes3a,
+  prob = 0.9)
+plot(model_bayes3a)
+
+
 
 # for all data combined how does writing time relate to pub total
-model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, data = survey)
+model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, 
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000, 
+                         data= survey, seed=111)
 summary(model_bayesx, digits = 3)
 posteriorsx <- describe_posterior(model_bayesx)
 
-# for a nicer table
 print_md(posteriorsx, digits = 3)
 
 posteriorx <- as.matrix(model_bayesx)
@@ -207,70 +230,18 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
   ylab("Hrs per week devoted to writing") +
   xlab("Yrs as trainee")
 
-# hrs writing per week and training
-#summary(lm(hrs_wk_writing ~ trainingtot, data = survey)) #yes - more training = more time
-#summary(lm(hrs_wk_writing ~ trainingtot, data = grads)) #yes - more training = more time
-#summary(lm(hrs_wk_writing ~ trainingtot, data = postdocs)) #no - not increasing writing #time with training
 
-## total writing time and first author pubs
-#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = survey)) #yes
-#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = grads)) #no
-#summary(lm(firstauthor_pubs ~ hrs_wk_writing, data = postdocs)) #marginal
-
-## hrs per week and coauthor pubs
-#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = survey)) #no
-#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = grads)) #yes
-#summary(lm(coauthor_pubs ~ hrs_wk_writing, data = postdocs)) #no
-
-## hrs per week and all pubs
-#summary(lm(pubtotal ~ hrs_wk_writing, data = survey)) #yes
-#summary(lm(pubtotal ~ hrs_wk_writing, data = grads)) #yes
-#summary(lm(pubtotal ~ hrs_wk_writing, data = postdocs)) #no
-
-
-# Attitudes toward science writing and review 
-summary(survey$writing_word)
-summary(survey$review_word)
-
-# Boxplots attitudes about writing and review 
-# writing word connotation vs. time spent writing
-survey$writing_word <- as.factor(survey$writing_word)
-summary((lm(hrs_wk_writing ~ writing_word, data = survey, na.rm = TRUE)))
-boxplot(hrs_wk_writing ~ writing_word, data = survey)
-
-#New analysis 5.3.2022
-# Analysis 4: Number of 1st author pubs vs. feelings about writing process -- repeated down below in Bayesian
-#summary((lm(firstauthor_pubs ~ writing_word, data = survey, na.rm = TRUE)))
-#boxplot(firstauthor_pubs ~ writing_word, data = survey)
-
-# writing tracking 
-#boxplot(hrs_wk_writing ~ plan_writing, data = survey)
-#summary(lm(hrs_wk_writing ~ plan_writing, data = survey, na.rm = TRUE))
-
-# plan writing model
-plan_model <- stan_glm(hrs_wk_writing ~ plan_writing, 
+# Analysis 2: plan writing (binomial) and pub total ====
+survey$plan_writing <- as.numeric(survey$plan_writing) 
+plan_model <- stan_glm(plan_writing ~ pubtotal,
                        iter = 10000,
                        cores = 3,
                        chains = 4,
-                       warmup = 5000, data = survey)
-
-summary(plan_model)
-posteriors <- describe_posterior(plan_model)
-# for a nicer table
-print_md(posteriors, digits = 3)
-
-
-
-# Analysis 2: writing attitude vs. plan writing ====
-#2A scientific writing word
-survey$plan_writing <- as.numeric(survey$plan_writing)
-plan_model <- stan_glm(plan_writing ~ 1 + writing_word, #q for Freya: what is this "1"?
-                           iter = 10000,
-                           cores = 3,
-                           chains = 4,
-                           warmup = 5000, 
-                           data = survey,
-                           family = binomial)
+                       warmup = 5000, 
+                       data = survey,
+                       seed = 111,
+                       family = binomial)
+#the results of this model do not agree with the current results in "WritingHabitsManuscript_NewMakeOver" draft 05.12.2022. The 95 % CRI from this model is [-0.05, 0.04] and Bhat=-0.0041 -- check with Freya
 
 describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
 summary(plan_model, digits = 3)
@@ -284,33 +255,7 @@ posterior_interval(
   prob = 0.9)
 plot(plan_model)
 
-boxplot(hrs_wk_writing ~ writing_word, data = survey)
-
-#2B: review word
-plan_model2 <- stan_glm(plan_writing ~ 1 + review_word, #q for Freya: what is this "1"?
-                       iter = 10000,
-                       cores = 3,
-                       chains = 4,
-                       warmup = 5000, 
-                       data = survey,
-                       family = binomial)
-
-describe_posterior(plan_model2, test = c("p_direction", "rope", "bayesfactor"))
-summary(plan_model2, digits = 3)
-posteriors_plan_model2 <- posterior(plan_model2)
-
-loo(plan_model2)
-prior_summary(plan_model2)
-summary(plan_model2, digits = 3)
-posterior_interval(
-  plan_model2,
-  prob = 0.9)
-plot(plan_model2)
-
-boxplot(hrs_wk_writing ~ review_word, data = survey)
-
-
-#Q for Freya: did we end up using this function for anything?
+#Q for Freya: what did we use this function for?
 # convert to probabilities
 logit2prob <- function(logit){
   odds <- exp(logit)
@@ -318,6 +263,7 @@ logit2prob <- function(logit){
   return(prob)
 }
 
+#Q for Freya: I don't understand what these positive probabilites are for
 # positive probability of tracking writing
 logit2prob(0.365)
 logit2prob(0.064)
@@ -325,12 +271,22 @@ logit2prob(-0.824)
 
 # Analysis 3: time per week spent writing and attitude toward writing and review ====
 # plan writing model
+
+survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
+survey$review_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
+
+levels(survey$writing_word)
+levels(survey$review_word)
+
 attitude_model1 <- stan_glm(hrs_wk_writing ~ writing_word, 
                             iter = 10000,
                             cores = 3,
                             chains = 4,
-                            warmup = 5000, data = survey)
-summary(attitude_model1)
+                            warmup = 5000, 
+                            seed = 111,
+                            data = survey)
+
+describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor")) 
 posteriors_attitude_model1 <- describe_posterior(attitude_model1)
 loo(attitude_model1)
 prior_summary(attitude_model1)
@@ -348,6 +304,8 @@ attitude_model2 <- stan_glm(hrs_wk_writing ~ review_word,
                             cores = 3,
                             chains = 4,
                             warmup = 5000, data = survey)
+
+describe_posterior(attitude_model2, test = c("p_direction", "rope", "bayesfactor")) 
 summary(attitude_model2)
 posteriors_attitude_model2 <- describe_posterior(attitude_model2)
 loo(attitude_model2)
@@ -370,12 +328,12 @@ model_bayes4 <- stan_glm(pubtotal ~
                          cores = 3,
                          chains = 4,
                          warmup = 5000,
-                         data= survey, seed=111)
+                         data= survey, 
+                         seed=111)
 
 plot(model_bayes4)
 
 # describe posteriors
-# 93% of posterior is negative
 bayestestR::describe_posterior(
   model_bayes4,
   effects = "all",
@@ -390,7 +348,6 @@ launch_shinystan(model_bayes4)
 
 #b) review process word
 model_bayes4b <- stan_glm(pubtotal ~ 
-                           graduate_yrs +
                            review_word,
                          iter = 10000,
                          cores = 3,
@@ -535,7 +492,44 @@ g2
 
 View()
 
-#Analysis 5: Writing support groups, try Chi-squared test====
+
+#Analysis 5: pubs total and Writing support groups====
+#try stan_glm model
+#summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
+#summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+#grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
+#TukeyHSD(grad.aov)
+#summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
+
+model_bayes5 <- stan_glm(firstauthor_pubs ~ 
+                           writing_support_group,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes5)
+
+bayestestR::describe_posterior(
+  model_bayes5,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes5, digits = 3)
+posteriors_model_bayes5 <- posterior(model_bayes5)
+
+loo(model_bayes5) #check if there are problems, values influencing the model
+prior_summary(model_bayes5)
+summary(model_bayes5, digits = 3)
+posterior_interval(
+  model_bayes5,
+  prob = 0.9)
+
+
+#Analysis 6: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
 #equal probability for all levels (i.e., null hypothesis is there's no difference)
 
@@ -546,45 +540,10 @@ survey$writing_support_group <- as.factor(survey$writing_support_group)
 x2 <- xtabs( ~ review_word + writing_support_group, survey)
 x2
 
-#Bayesian chi-squared
-contingencyTableBF(x, sampleType = "poisson") #odds for alt hypothesis is 0.17%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
+#Bayesian chi-square test from https://learningstatisticswithr.com/book/bayes.html#bayescontingency
+#BayesFactor package
 
-contingencyTableBF(x2, sampleType = "poisson") #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
+contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.17%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
 
-
-#Analysis 6: pubs total and Writing support groups====
-#try stan_glm model
-#summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
-#summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
-#grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
-#TukeyHSD(grad.aov)
-#summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
-
-
-model_bayes6 <- stan_glm(pubtotal ~ 
-                           writing_support_group,
-                         iter = 10000,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000,
-                         data= survey, seed=111)
-
-plot(model_bayes6)
-
-bayestestR::describe_posterior(
-  model_bayes6,
-  effects = "all",
-  component = "all",
-  test = c("p_direction", "p_significance"),
-  centrality = "all"
-)
-summary(model_bayes6, digits = 3)
-posteriors_model_bayes6 <- posterior(model_bayes6)
-
-loo(model_bayes6) #check if there are problems, values influencing the model
-prior_summary(model_bayes6)
-summary(model_bayes6, digits = 3)
-posterior_interval(
-  model_bayes6,
-  prob = 0.9)
+contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
 
