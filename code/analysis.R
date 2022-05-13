@@ -164,7 +164,7 @@ model_bayes3a <- stan_glm(coauthor_pubs ~
                           cores = 3,
                           chains = 4,
                           warmup = 5000, 
-                          data= survey, seed=111) #All data
+                          data= survey, seed=111) #All data and coauthor pubs
 
 #interpret
 describe_posterior(model_bayes3a, test = c("p_direction", "rope", "bayesfactor")) 
