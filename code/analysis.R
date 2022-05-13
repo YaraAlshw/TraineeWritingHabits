@@ -287,12 +287,12 @@ plot(plan_model)
 ## These may need to be recoded as -1, 0, and 1. I'm not sure stan_glm does it automatically
 
 survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
-survey$review_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
+survey$review_word <- factor(survey$review_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
 
 levels(survey$writing_word)
 levels(survey$review_word)
 
-attitude_model1 <- stan_glm(hrs_wk_writing ~ writing_word, 
+attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word, 
                             iter = 10000,
                             cores = 3,
                             chains = 4,
