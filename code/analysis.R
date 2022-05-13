@@ -115,7 +115,13 @@ survey %>%
 
 #Analysis 1: pubtotal vs. time spent writing ====
 #Q for Freya: do we add any of the identity variables?
+## A: Since pub totals are related to identity, we said yes previously. But I think we 
+## should just look at first-author pubs for this manuscript. Co-authorship often
+## doesn't involve nearly as much writing.
+
 #figure out if we need to analyze by grad and post docs? or ok to keep all together
+## I say we keep it all together. There is a significant correlation between hrs per 
+## week writing and career stage (and pub totals)
 
 model_bayes1a <- stan_glm(pubtotal ~ 
                           hrs_wk_writing,
@@ -181,7 +187,7 @@ plot(model_bayes3a)
 
 
 
-# for all data combined how does writing time relate to pub total
+# for all data combined how does writing time relate to training total
 model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, 
                          iter = 10000,
                          cores = 3,
@@ -202,6 +208,7 @@ linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
   theme_bw(base_size = 14) +
   xlab("Total yrs as trainee (grad + postdoc)") +
   ylab("Total publications")
+print(linpubs)
 
 # Correlation between pubtotal and total training years
 cor(survey$pubtotal, survey$trainingtot, method = "pearson")
@@ -232,16 +239,20 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
 
 
 # Analysis 2: plan writing (binomial) and pub total ====
+## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
 survey$plan_writing <- as.numeric(survey$plan_writing) 
-plan_model <- stan_glm(plan_writing ~ pubtotal,
+survey$plan_writing <- as.factor(survey$plan_writing) 
+plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
                        iter = 10000,
                        cores = 3,
                        chains = 4,
                        warmup = 5000, 
                        data = survey,
                        seed = 111,
-                       family = binomial)
+                       family = gaussian(link = "log"))
 #the results of this model do not agree with the current results in "WritingHabitsManuscript_NewMakeOver" draft 05.12.2022. The 95 % CRI from this model is [-0.05, 0.04] and Bhat=-0.0041 -- check with Freya
+## I think the model here is different than the one I originally specified. I edited it above.
+## But it doesn't look like planning writing does affect first-author pubs
 
 describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
 summary(plan_model, digits = 3)
@@ -256,21 +267,24 @@ posterior_interval(
 plot(plan_model)
 
 #Q for Freya: what did we use this function for?
+## This is for extracting probability. It can be deleted.
 # convert to probabilities
-logit2prob <- function(logit){
-  odds <- exp(logit)
-  prob <- odds / (1 + odds)
-  return(prob)
-}
+# logit2prob <- function(logit){
+#   odds <- exp(logit)
+#   prob <- odds / (1 + odds)
+#   return(prob)
+# }
 
 #Q for Freya: I don't understand what these positive probabilites are for
+## Can be deleted
 # positive probability of tracking writing
-logit2prob(0.365)
-logit2prob(0.064)
-logit2prob(-0.824)
+# logit2prob(0.365)
+# logit2prob(0.064)
+# logit2prob(-0.824)
 
 # Analysis 3: time per week spent writing and attitude toward writing and review ====
 # plan writing model
+## These may need to be recoded as -1, 0, and 1. I'm not sure stan_glm does it automatically
 
 survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
 survey$review_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
@@ -298,8 +312,8 @@ plot(attitude_model1)
 # for a nicer table
 print_md(posteriors_attitude_model1, digits = 3)
 
-
-attitude_model2 <- stan_glm(hrs_wk_writing ~ review_word,
+# setting the intercept to zero allows us to compare the groups easier
+attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
                             iter = 10000,
                             cores = 3,
                             chains = 4,
