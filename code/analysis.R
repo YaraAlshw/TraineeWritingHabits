@@ -336,7 +336,8 @@ print_md(posteriors_attitude_model2, digits = 3)
 #Analysis 4: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
 #a) scientific writing word
-model_bayes4 <- stan_glm(pubtotal ~ 
+## This is cool! Those who feel neagtive have fewer pubs than those who feel positive
+model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
                            writing_word,
                          iter = 10000,
                          cores = 3,
@@ -361,7 +362,7 @@ summary(model_bayes4, digits = 3)
 launch_shinystan(model_bayes4)
 
 #b) review process word
-model_bayes4b <- stan_glm(pubtotal ~ 
+model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
                          iter = 10000,
                          cores = 3,
@@ -412,17 +413,26 @@ launch_shinystan(model_bayes4b)
 #summary(lm(coauthor_pubs ~ review_word, data = postdocs))
 
 # writing success (i.e., pubs) NOT linked to peer-review attitude
-review_box <- ggplot(aes(x = review_word, y = pubtotal, fill = stage), 
-                     data = na.omit(survey[,c("pubtotal", "review_word", "stage")])) +
+review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
+                     data = na.omit(survey[,c("firstauthor_pubs", "review_word", "stage")])) +
   geom_boxplot() + theme_bw(base_size = 14) +
   xlab("Feelings about peer review") +
-  ylab("Total publications")
+  ylab("First author publications")
+print(review_box)
 
-writing_box <- ggplot(aes(y = pubtotal, x = writing_word, fill = stage),
-                      data = na.omit(survey[,c("pubtotal", "writing_word", "stage")])) +
+review_box2 <- ggplot(aes(x = review_word, y = firstauthor_pubs), 
+                     data = na.omit(survey[,c("firstauthor_pubs", "review_word", "stage")])) +
+  geom_boxplot() + theme_bw(base_size = 14) +
+  xlab("Feelings about peer review") +
+  ylab("First author publications")
+print(review_box2)
+
+writing_box <- ggplot(aes(y = firstauthor_pubs, x = writing_word, fill = stage),
+                      data = na.omit(survey[,c("firstauthor_pubs", "writing_word", "stage")])) +
   geom_boxplot() + theme_bw(base_size = 14) +
   xlab("Feelings about writing process") +
-  ylab("Total publications")
+  ylab("First author publications")
+print(writing_box)
 
 ggplot(aes(y = writing_word, x = stage, fill = stage), data = survey) +
   geom_boxplot() + 
