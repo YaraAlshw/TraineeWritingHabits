@@ -336,7 +336,7 @@ print_md(posteriors_attitude_model2, digits = 3)
 #Analysis 4: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
 #a) scientific writing word
-## This is cool! Those who feel neagtive have fewer pubs than those who feel positive
+## This is cool! Those who feel negative have fewer pubs than those who feel positive
 model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
                            writing_word,
                          iter = 10000,
@@ -348,7 +348,6 @@ model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
 
 plot(model_bayes4)
 
-# describe posteriors
 bayestestR::describe_posterior(
   model_bayes4,
   effects = "all",
@@ -356,10 +355,16 @@ bayestestR::describe_posterior(
   test = c("p_direction", "p_significance"),
   centrality = "all"
 )
-
-model_loo <- loo(model_bayes4) #check if there are problems, values influencing the model
 summary(model_bayes4, digits = 3)
-launch_shinystan(model_bayes4)
+posteriors_model_bayes4 <- posterior(model_bayes4)
+
+loo(model_bayes4) #check if there are problems, values influencing the model
+prior_summary(model_bayes4)
+summary(model_bayes4, digits = 3)
+posterior_interval(
+  model_bayes4,
+  prob = 0.9)
+
 
 #b) review process word
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
