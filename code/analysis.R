@@ -286,8 +286,8 @@ plot(plan_model)
 # plan writing model
 ## These may need to be recoded as -1, 0, and 1. I'm not sure stan_glm does it automatically
 
-survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
-survey$review_word <- factor(survey$review_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
+#survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
+#survey$review_word <- factor(survey$review_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions   ##don't need to do this anymore b/c we set intercept to 0
 
 levels(survey$writing_word)
 levels(survey$review_word)
@@ -356,7 +356,7 @@ bayestestR::describe_posterior(
   centrality = "all"
 )
 summary(model_bayes4, digits = 3)
-posteriors_model_bayes4 <- posterior(model_bayes4)
+posteriors_model_bayes4 <- describe_posterior(model_bayes4)
 
 loo(model_bayes4) #check if there are problems, values influencing the model
 prior_summary(model_bayes4)
@@ -364,6 +364,9 @@ summary(model_bayes4, digits = 3)
 posterior_interval(
   model_bayes4,
   prob = 0.9)
+
+# for a nicer table
+print_md(posteriors_model_bayes4, digits = 3)
 
 
 #b) review process word
@@ -377,8 +380,6 @@ model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
 
 plot(model_bayes4b)
 
-# describe posteriors
-# 93% of posterior is negative
 bayestestR::describe_posterior(
   model_bayes4b,
   effects = "all",
@@ -386,11 +387,18 @@ bayestestR::describe_posterior(
   test = c("p_direction", "p_significance"),
   centrality = "all"
 )
-
-model_loo <- loo(model_bayes4b) #check if there are problems, values influencing the model
 summary(model_bayes4b, digits = 3)
-launch_shinystan(model_bayes4b)
+posteriors_model_bayes4b <- describe_posterior(model_bayes4b)
 
+loo(model_bayes4b) #check if there are problems, values influencing the model
+prior_summary(model_bayes4b)
+summary(model_bayes4b, digits = 3)
+posterior_interval(
+  model_bayes4b,
+  prob = 0.9)
+
+# for a nicer table
+print_md(posteriors_model_bayes4b, digits = 3)
 
 #writing attitude IS linked to first-author pubs for grads
 #summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
@@ -575,4 +583,15 @@ x2
 contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.17%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
 
 contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
+
+
+#Electronic spreadsheets
+#Electronic note taking applications
+#Physical notebook
+#Checking in with writing accountability/support group
+#Checking in with advisor or mentor
+#I do not track my writing progress
+#other
+
+
 
