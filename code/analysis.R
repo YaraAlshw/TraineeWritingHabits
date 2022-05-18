@@ -44,20 +44,12 @@ survey <- survey %>% mutate_each(funs(empty_as_na))
 
 # convert columns from character to factor
 str(survey)
-survey$condition <- as.factor(survey$condition)
-survey$BIPOC <- as.factor(survey$BIPOC)
-survey$first_gen <- as.factor(survey$first_gen)
-survey$first_language_english <- as.factor(survey$first_language_english)
-survey$gender_identity <- as.factor(survey$gender_identity)
+
 survey$writing_word <- as.factor(survey$writing_word)
 survey$review_word <- as.factor(survey$review_word)
 
-# recode gender identity to eliminate non-binary/third
-survey$female <- ifelse(test = survey$gender_identity == "Female", 1, 0)
-survey$ESL <- ifelse(test = survey$first_language_english == "Yes", 0, 1)
-survey$firstgen <- ifelse(test = survey$first_gen == "Yes", 1, 0)
-survey$BIPOC <- ifelse(test = survey$BIPOC == "Yes", 1, 0)
-survey$condition <- ifelse(test = survey$condition == "Yes", 1, 0)
+survey$plan_writing <- as.factor(survey$plan_writing)
+survey$writing_tracking_reco <- as.factor(survey$writing_tracking_reco)
 
 # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
@@ -79,34 +71,6 @@ survey %>%
             sdfirst = sd(firstauthor_pubs, na.rm = TRUE),
             sdco = sd(coauthor_pubs, na.rm = TRUE))
 
-# First_gen n = 272, grad = 194 respondents, postdoc = 78
-survey %>%
-  group_by(first_gen) %>%
-  summarize(n())
-
-# 193 grads, 140 female, 47 male, 6 non-binary-thirdgender/other
-# 76 postdocs, 46 female, 28 male, 2 other
-survey %>%
-  group_by(gender_identity) %>%
-  summarize(n())
-
-# disability or health issue
-# n = 193 grads, n = 77 postdocs
-survey %>%
-  group_by(condition) %>%
-  summarize(n())
-
-# first language English
-# n = 199 grads, n = 78 postdocs
-survey %>%
-  group_by(first_language_english) %>%
-  summarize(n())
-
-# BIPOC
-# n = 360, 53 = yes, 307 = no
-survey %>%
-  group_by(BIPOC) %>%
-  summarize(n())
 
 #report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
 #multiple regression, can add random effect (stan_gmler), X ` predcitors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed)
@@ -242,6 +206,7 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
 ## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
 survey$plan_writing <- as.numeric(survey$plan_writing) 
 survey$plan_writing <- as.factor(survey$plan_writing) 
+
 plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
                        iter = 10000,
                        cores = 3,
@@ -594,4 +559,61 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 #other
 
 
+#Analysis 7: writing tracking method and pub total, and writing per week====
+
+model_bayes7 <- stan_glm(firstauthor_pubs ~ 
+                           writing_tracking_reco,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes7)
+
+bayestestR::describe_posterior(
+  model_bayes7,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes7, digits = 3)
+posteriors_model_bayes7 <- posterior(model_bayes7)
+
+loo(model_bayes7) #check if there are problems, values influencing the model
+prior_summary(model_bayes7)
+summary(model_bayes7, digits = 3)
+posterior_interval(
+  model_bayes7,
+  prob = 0.9)
+
+
+#writing per week
+model_bayes7b <- stan_glm(hrs_wk_writing ~ 
+                           writing_tracking_reco,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, seed=111)
+
+plot(model_bayes7b)
+
+bayestestR::describe_posterior(
+  model_bayes7b,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes7b, digits = 3)
+posteriors_model_bayes7b <- posterior(model_bayes7b)
+
+loo(model_bayes7b) #check if there are problems, values influencing the model
+prior_summary(model_bayes7b)
+summary(model_bayes7b, digits = 3)
+posterior_interval(
+  model_bayes7b,
+  prob = 0.9)
 
