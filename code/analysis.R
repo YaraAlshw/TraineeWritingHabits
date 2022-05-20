@@ -72,28 +72,18 @@ survey %>%
             sdco = sd(coauthor_pubs, na.rm = TRUE))
 
 
-#report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
-#multiple regression, can add random effect (stan_gmler), X ` predcitors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed)
+#Notes: report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
+#multiple regression, can add random effect (stan_gmler), X ` predictors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed for reproducibality
 
-###-------This is where writing habits ms analysis start -Yara-----###
+#Analysis 1: first author pubs vs. time spent writing ====
 
-#Analysis 1: pubtotal vs. time spent writing ====
-#Q for Freya: do we add any of the identity variables?
-## A: Since pub totals are related to identity, we said yes previously. But I think we 
-## should just look at first-author pubs for this manuscript. Co-authorship often
-## doesn't involve nearly as much writing.
-
-#figure out if we need to analyze by grad and post docs? or ok to keep all together
-## I say we keep it all together. There is a significant correlation between hrs per 
-## week writing and career stage (and pub totals)
-
-model_bayes1a <- stan_glm(pubtotal ~ 
-                          hrs_wk_writing,
-                        iter = 10000,
-                        cores = 3,
-                        chains = 4,
-                        warmup = 5000, 
-                        data= survey, seed=111) #All data and total pub
+model_bayes1a <- stan_glm(firstauthor_pubs ~ 
+                            hrs_wk_writing,
+                          iter = 10000,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000, 
+                          data= survey, seed=111) #All data
 #interpret
 describe_posterior(model_bayes1a, test = c("p_direction", "rope", "bayesfactor"))
 summary(model_bayes1a, digits = 3)
@@ -106,49 +96,6 @@ posterior_interval(
   model_bayes1a,
   prob = 0.9)
 plot(model_bayes1a)
-
-
-model_bayes2a <- stan_glm(firstauthor_pubs ~ 
-                            hrs_wk_writing,
-                          iter = 10000,
-                          cores = 3,
-                          chains = 4,
-                          warmup = 5000, 
-                          data= survey, seed=111) #All data
-#interpret
-describe_posterior(model_bayes2a, test = c("p_direction", "rope", "bayesfactor"))
-summary(model_bayes2a, digits = 3)
-posteriors_model_bayes2a <- posterior(model_bayes2a)
-
-loo(model_bayes2a)
-prior_summary(model_bayes2a)
-summary(model_bayes2a, digits = 3)
-posterior_interval(
-  model_bayes2a,
-  prob = 0.9)
-plot(model_bayes2a)
-
-model_bayes3a <- stan_glm(coauthor_pubs ~ 
-                            hrs_wk_writing,
-                          iter = 10000,
-                          cores = 3,
-                          chains = 4,
-                          warmup = 5000, 
-                          data= survey, seed=111) #All data and coauthor pubs
-
-#interpret
-describe_posterior(model_bayes3a, test = c("p_direction", "rope", "bayesfactor")) 
-summary(model_bayes3a, digits = 3)
-posteriors_model_bayes3a <- posterior(model_bayes3a)
-
-loo(model_bayes3a)
-prior_summary(model_bayes3a)
-summary(model_bayes3a, digits = 3)
-posterior_interval(
-  model_bayes3a,
-  prob = 0.9)
-plot(model_bayes3a)
-
 
 
 # for all data combined how does writing time relate to training total
@@ -201,7 +148,6 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
   ylab("Hrs per week devoted to writing") +
   xlab("Yrs as trainee")
 
-
 # Analysis 2: plan writing (binomial) and pub total ====
 ## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
 survey$plan_writing <- as.numeric(survey$plan_writing) 
@@ -247,7 +193,70 @@ plot(plan_model)
 # logit2prob(0.064)
 # logit2prob(-0.824)
 
-# Analysis 3: time per week spent writing and attitude toward writing and review ====
+
+#Analysis 3: writing tracking method (binomial) and pub total, and writing per week====
+
+model_bayes7 <- stan_glm(firstauthor_pubs ~ 
+                           writing_tracking_reco,
+                         iter = 10000,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= survey, 
+                         family = gaussian(link = "log"),
+                         seed=111)
+
+plot(model_bayes7)
+
+bayestestR::describe_posterior(
+  model_bayes7,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes7, digits = 3)
+posteriors_model_bayes7 <- posterior(model_bayes7)
+
+loo(model_bayes7) #check if there are problems, values influencing the model
+prior_summary(model_bayes7)
+summary(model_bayes7, digits = 3)
+posterior_interval(
+  model_bayes7,
+  prob = 0.9)
+
+
+#writing per week
+model_bayes7b <- stan_glm(hrs_wk_writing ~ 
+                            writing_tracking_reco,
+                          iter = 10000,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000,
+                          family = gaussian(link = "log"),
+                          data= survey, seed=111)
+
+plot(model_bayes7b)
+
+bayestestR::describe_posterior(
+  model_bayes7b,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes7b, digits = 3)
+posteriors_model_bayes7b <- posterior(model_bayes7b)
+
+loo(model_bayes7b) #check if there are problems, values influencing the model
+prior_summary(model_bayes7b)
+summary(model_bayes7b, digits = 3)
+posterior_interval(
+  model_bayes7b,
+  prob = 0.9)
+
+
+# Analysis 4: time per week spent writing and attitude toward writing and review ====
 # plan writing model
 ## These may need to be recoded as -1, 0, and 1. I'm not sure stan_glm does it automatically
 
@@ -298,7 +307,7 @@ plot(attitude_model2)
 # for a nicer table
 print_md(posteriors_attitude_model2, digits = 3)
 
-#Analysis 4: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
+#Analysis 5: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
 #a) scientific writing word
 ## This is cool! Those who feel negative have fewer pubs than those who feel positive
@@ -495,7 +504,7 @@ g2
 View()
 
 
-#Analysis 5: pubs total and Writing support groups====
+#Analysis 6: pubs total and Writing support groups====
 #try stan_glm model
 #summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
 #summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
@@ -531,7 +540,7 @@ posterior_interval(
   prob = 0.9)
 
 
-#Analysis 6: Writing support groups, try Chi-squared test====
+#Analysis 7: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
 #equal probability for all levels (i.e., null hypothesis is there's no difference)
 
@@ -559,61 +568,5 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 #other
 
 
-#Analysis 7: writing tracking method and pub total, and writing per week====
 
-model_bayes7 <- stan_glm(firstauthor_pubs ~ 
-                           writing_tracking_reco,
-                         iter = 10000,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000,
-                         data= survey, seed=111)
-
-plot(model_bayes7)
-
-bayestestR::describe_posterior(
-  model_bayes7,
-  effects = "all",
-  component = "all",
-  test = c("p_direction", "p_significance"),
-  centrality = "all"
-)
-summary(model_bayes7, digits = 3)
-posteriors_model_bayes7 <- posterior(model_bayes7)
-
-loo(model_bayes7) #check if there are problems, values influencing the model
-prior_summary(model_bayes7)
-summary(model_bayes7, digits = 3)
-posterior_interval(
-  model_bayes7,
-  prob = 0.9)
-
-
-#writing per week
-model_bayes7b <- stan_glm(hrs_wk_writing ~ 
-                           writing_tracking_reco,
-                         iter = 10000,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000,
-                         data= survey, seed=111)
-
-plot(model_bayes7b)
-
-bayestestR::describe_posterior(
-  model_bayes7b,
-  effects = "all",
-  component = "all",
-  test = c("p_direction", "p_significance"),
-  centrality = "all"
-)
-summary(model_bayes7b, digits = 3)
-posteriors_model_bayes7b <- posterior(model_bayes7b)
-
-loo(model_bayes7b) #check if there are problems, values influencing the model
-prior_summary(model_bayes7b)
-summary(model_bayes7b, digits = 3)
-posterior_interval(
-  model_bayes7b,
-  prob = 0.9)
 
