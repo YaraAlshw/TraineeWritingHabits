@@ -146,7 +146,7 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
   scale_fill_viridis() +
   theme_bw(base_size = 14) +
   ylab("Hrs per week devoted to writing") +
-  xlab("Yrs as trainee")
+  xlab("Yrs as trainee") 
 
 # Analysis 2: plan writing (binomial) and pub total ====
 ## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
