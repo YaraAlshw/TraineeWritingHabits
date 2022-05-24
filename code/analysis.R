@@ -32,7 +32,7 @@ library(BayesFactor)
 library(shinystan)
 
 # Load data ====
-survey <- read.csv("data/dataclean_Nov2.csv", header = TRUE)
+survey <- read.csv("data/dataclean_May22.csv", header = TRUE)
 
 empty_as_na <- function(x){ # empty_as_na function did not exist so I found this code to create the function
   if("factor" %in% class(x)) x <- as.character(x) ## since ifelse wont work with factors
@@ -150,7 +150,7 @@ writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
 
 # Analysis 2: plan writing (binomial) and pub total ====
 ## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
-survey$plan_writing <- as.numeric(survey$plan_writing) 
+#survey$plan_writing <- as.numeric(survey$plan_writing) 
 survey$plan_writing <- as.factor(survey$plan_writing) 
 
 plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
@@ -166,6 +166,15 @@ plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
 ## But it doesn't look like planning writing does affect first-author pubs
 
 describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
+
+bayestestR::describe_posterior(
+  plan_model,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+
 summary(plan_model, digits = 3)
 posteriors_plan_model <- posterior(plan_model)
 
@@ -374,30 +383,7 @@ posterior_interval(
 # for a nicer table
 print_md(posteriors_model_bayes4b, digits = 3)
 
-#writing attitude IS linked to first-author pubs for grads
-#summary(lm(firstauthor_pubs ~ writing_word, data = survey)) # yes
-#summary(lm(firstauthor_pubs ~ writing_word, data = grads)) # yes
-#summary(lm(firstauthor_pubs ~ writing_word, data = postdocs)) #nope
 
-## writing attitude not linked to co-author pubs
-#summary(lm(coauthor_pubs ~ writing_word, data = survey)) # no
-#summary(lm(coauthor_pubs ~ writing_word, data = grads)) # yes
-#summary(lm(coauthor_pubs ~ writing_word, data = postdocs)) # no
-
-# peer review attitude not linked to total pubs
-#summary(lm(pubtotal ~ review_word, data = survey))
-#summary(lm(pubtotal ~ review_word, data = grads))
-#summary(lm(pubtotal ~ review_word, data = postdocs))
-
-## peer review attitude not linked to first-author pubs
-#summary(lm(firstauthor_pubs ~ review_word, data = survey))
-#summary(lm(firstauthor_pubs ~ review_word, data = grads))
-#summary(lm(firstauthor_pubs ~ review_word, data = postdocs))
-
-## peer review attitude not linked to co-author pubs
-#summary(lm(coauthor_pubs ~ review_word, data = survey))
-#summary(lm(coauthor_pubs ~ review_word, data = grads))
-#summary(lm(coauthor_pubs ~ review_word, data = postdocs))
 
 # writing success (i.e., pubs) NOT linked to peer-review attitude
 review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
