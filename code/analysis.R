@@ -97,6 +97,7 @@ posterior_interval(
   prob = 0.9)
 plot(model_bayes1a)
 
+launch_shinystan(model_bayes1a)
 
 # for all data combined how does writing time relate to training total
 model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, 
@@ -111,6 +112,7 @@ posteriorsx <- describe_posterior(model_bayesx)
 print_md(posteriorsx, digits = 3)
 
 posteriorx <- as.matrix(model_bayesx)
+launch_shinystan(model_bayesx)
 
 # graph of relationship total pubs and total training
 linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
@@ -161,9 +163,6 @@ plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
                        data = survey,
                        seed = 111,
                        family = gaussian(link = "log"))
-#the results of this model do not agree with the current results in "WritingHabitsManuscript_NewMakeOver" draft 05.12.2022. The 95 % CRI from this model is [-0.05, 0.04] and Bhat=-0.0041 -- check with Freya
-## I think the model here is different than the one I originally specified. I edited it above.
-## But it doesn't look like planning writing does affect first-author pubs
 
 describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
 
@@ -185,23 +184,7 @@ posterior_interval(
   plan_model,
   prob = 0.9)
 plot(plan_model)
-
-#Q for Freya: what did we use this function for?
-## This is for extracting probability. It can be deleted.
-# convert to probabilities
-# logit2prob <- function(logit){
-#   odds <- exp(logit)
-#   prob <- odds / (1 + odds)
-#   return(prob)
-# }
-
-#Q for Freya: I don't understand what these positive probabilites are for
-## Can be deleted
-# positive probability of tracking writing
-# logit2prob(0.365)
-# logit2prob(0.064)
-# logit2prob(-0.824)
-
+launch_shinystan(plan_model)
 
 #Analysis 3: writing tracking method (binomial) and pub total, and writing per week====
 
@@ -234,6 +217,7 @@ posterior_interval(
   model_bayes7,
   prob = 0.9)
 
+launch_shinystan(model_bayes7)
 
 #writing per week
 model_bayes7b <- stan_glm(hrs_wk_writing ~ 
@@ -295,6 +279,8 @@ plot(attitude_model1)
 # for a nicer table
 print_md(posteriors_attitude_model1, digits = 3)
 
+launch_shinystan(attitude_model1)
+
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
                             iter = 10000,
@@ -315,6 +301,8 @@ plot(attitude_model2)
 
 # for a nicer table
 print_md(posteriors_attitude_model2, digits = 3)
+
+launch_shinystan(attitude_model2)
 
 #Analysis 5: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
@@ -351,7 +339,7 @@ posterior_interval(
 # for a nicer table
 print_md(posteriors_model_bayes4, digits = 3)
 
-
+launch_shinystan(model_bayes4)
 #b) review process word
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
@@ -383,7 +371,7 @@ posterior_interval(
 # for a nicer table
 print_md(posteriors_model_bayes4b, digits = 3)
 
-
+launch_shinystan(model_bayes4b)
 
 # writing success (i.e., pubs) NOT linked to peer-review attitude
 review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
@@ -525,6 +513,7 @@ posterior_interval(
   model_bayes5,
   prob = 0.9)
 
+launch_shinystan(model_bayes5)
 
 #Analysis 7: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
