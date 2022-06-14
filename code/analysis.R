@@ -569,14 +569,29 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 #other
 
 # Density plot for sentiment and first author pubs ====
+#boxplot for now
 
-review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
-                     data = na.omit(survey[,c("firstauthor_pubs", "review_word", "stage")])) +
-  geom_boxplot() + theme_bw(base_size = 14) +
+writing_box <- ggplot(aes(x = writing_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "writing_word")])) +
+  geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
+  xlab("Feelings about scientific writing") +
+  ylab("First author publications") 
+
+review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
+  geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
   xlab("Feelings about peer review") +
-  ylab("First author publications")
+  ylab("First author publications")  
 
-### Plot of behavioral shifts
+combined_box <- ggarrange(common.legend = TRUE,
+          writing_box,
+          review_box,
+          align = "hv", 
+          nrow = 2,
+          labels = "AUTO"
+)
+
+ggsave(combined_box, filename = "combined_box.png", dpi = 300, width = 8, height = 8)
+
+### density plot
 sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
   geom_hline(yintercept = 0.5, linetype = "dotted") +
   ggdist::stat_halfeye(
@@ -603,4 +618,165 @@ print(sent_plot)
 
 ggsave(fiveyrshift_plot, filename = "Output_Figures/FiveYrShifts.png", dpi = 300, width = 8, height = 5)
 
+# Plotting histograms ====
+
+#analysis 1
+# for specifying what you want in posteriors
+# plot of posteriors
+posterior <- as.matrix(model_bayes1a)
+
+# plot it
+
+analysis1_plot <- mcmc_areas(posterior,
+                           pars = "hrs_wk_writing",
+                           prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  #xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis1_plot)
+
+# analysis 2
+posterior2 <- as.matrix(plan_model)
+
+analysis2_plot <- mcmc_areas(posterior2,
+                             pars = "plan_writing1",
+                             prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis2_plot)
+
+#analysis 3
+posterior3 <- as.matrix(model_bayes7)
+
+analysis3_plot <- mcmc_areas(posterior3,
+                             pars = "writing_tracking_reco1",
+                             prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  #xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis3_plot)
+
+#analysis 4
+posterior4 <- as.matrix(attitude_model1)
+
+analysis4_plot <- mcmc_areas(posterior4,
+                             pars = c("writing_wordnegative","writing_wordneutral", "writing_wordpositive"),
+                             prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis4_plot)
+
+
+#analysis 4b
+posterior4b <- as.matrix(attitude_model2)
+
+analysis4b_plot <- mcmc_areas(posterior4b,
+                             pars = c("review_wordnegative","review_wordneutral", "review_wordpositive"),
+                             prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis4b_plot)
+
+
+#analysis 5a
+posterior5a <- as.matrix(model_bayes4)
+
+analysis5a_plot <- mcmc_areas(posterior5a,
+                              pars = c("writing_wordnegative","writing_wordneutral", "writing_wordpositive"),
+                              prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis5a_plot)
+
+
+#analysis 5b
+posterior5b <- as.matrix(model_bayes4b)
+
+analysis5b_plot <- mcmc_areas(posterior5b,
+                              pars = c("review_wordnegative","review_wordneutral", "review_wordpositive"),
+                              prob = 0.95) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_bw(base_size = 16) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
+print(analysis5b_plot)
+
+#figures for paper
+print(analysis1_plot)
+print(analysis2_plot)
+print(analysis3_plot)
+print(analysis5a_plot)
+
+plots3 <- ggarrange(common.legend = TRUE,
+                    analysis1_plot,
+                    analysis2_plot,
+                    analysis3_plot,
+                    align = "hv", 
+                    nrow = 1,
+                    labels = "AUTO")
+
+ggsave(plots3, filename = "plots3.png", dpi = 300, width = 16, height = 6)
+
+print(analysis5a_plot)
+
+ggsave(analysis5a_plot, filename = "analysis5a_plot.png", dpi = 300, width = 8, height = 8)
 
