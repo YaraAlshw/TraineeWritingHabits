@@ -77,9 +77,13 @@ survey %>%
 
 #Analysis 1: first author pubs vs. time spent writing ====
 
+t_prior <- student_t(df = 1, location = 0, scale = 2.5)
+
 model_bayes1a <- stan_glm(firstauthor_pubs ~ 
                             hrs_wk_writing,
                           iter = 10000,
+                          prior = t_prior,
+                          prior_intercept = t_prior,
                           cores = 3,
                           chains = 4,
                           warmup = 5000, 
@@ -91,13 +95,15 @@ posteriors_model_bayes1a <- posterior(model_bayes1a)
 
 loo(model_bayes1a)
 prior_summary(model_bayes1a)
-summary(model_bayes1a, digits = 3)
 posterior_interval(
   model_bayes1a,
   prob = 0.9)
 plot(model_bayes1a)
 
+posteriorx <- as.matrix(model_bayes1a)
+
 launch_shinystan(model_bayes1a)
+
 
 # for all data combined how does writing time relate to training total
 model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, 
@@ -111,8 +117,11 @@ posteriorsx <- describe_posterior(model_bayesx)
 
 print_md(posteriorsx, digits = 3)
 
-posteriorx <- as.matrix(model_bayesx)
 launch_shinystan(model_bayesx)
+
+posterior_interval(
+  model_bayes7b,
+  prob = 0.9)
 
 # graph of relationship total pubs and total training
 linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
@@ -157,6 +166,8 @@ survey$plan_writing <- as.factor(survey$plan_writing)
 
 plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
                        iter = 10000,
+                       prior = t_prior,
+                       prior_intercept = t_prior,
                        cores = 3,
                        chains = 4,
                        warmup = 5000, 
@@ -191,12 +202,16 @@ launch_shinystan(plan_model)
 model_bayes7 <- stan_glm(firstauthor_pubs ~ 
                            writing_tracking_reco,
                          iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
                          cores = 3,
                          chains = 4,
                          warmup = 5000,
                          data= survey, 
                          family = gaussian(link = "log"),
                          seed=111)
+
+describe_posterior(model_bayes7, test = c("p_direction", "rope", "bayesfactor"))
 
 plot(model_bayes7)
 
@@ -263,6 +278,8 @@ attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word,
                             iter = 10000,
                             cores = 3,
                             chains = 4,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
                             warmup = 5000, 
                             seed = 111,
                             data = survey)
@@ -284,6 +301,8 @@ launch_shinystan(attitude_model1)
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
                             iter = 10000,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
                             cores = 3,
                             chains = 4,
                             warmup = 5000, data = survey)
@@ -311,6 +330,8 @@ launch_shinystan(attitude_model2)
 model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
                            writing_word,
                          iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
                          cores = 3,
                          chains = 4,
                          warmup = 5000,
@@ -344,6 +365,8 @@ launch_shinystan(model_bayes4)
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
                          iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
                          cores = 3,
                          chains = 4,
                          warmup = 5000,
@@ -479,6 +502,7 @@ View()
 
 
 #Analysis 6: pubs total and Writing support groups====
+
 #try stan_glm model
 #summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
 #summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
@@ -489,6 +513,8 @@ View()
 model_bayes5 <- stan_glm(firstauthor_pubs ~ 
                            writing_support_group,
                          iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
                          cores = 3,
                          chains = 4,
                          warmup = 5000,
