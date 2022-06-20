@@ -608,7 +608,7 @@ sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),               da
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank()
   ) +
-  ylim(0, 1) +
+  ylim(0, 20) +
   ylab("First author publications") +
   xlab("Sentiment towards peer review") +
   ggtitle("Density Plot of setiment towards peer review")
@@ -780,3 +780,12 @@ print(analysis5a_plot)
 
 ggsave(analysis5a_plot, filename = "analysis5a_plot.png", dpi = 300, width = 8, height = 8)
 
+
+### ggplot for writing vs first author pubs
+# does writing more mean more papers? YES
+writepubs <- ggplot(aes(x = hrs_wk_writing, y = pubtotal), data = survey) +
+  geom_point(pch = 21, aes(size = graduate_yrs, fill = postdoc_yrs), alpha = 0.5) +
+  scale_fill_viridis() +
+  theme_bw(base_size = 14) +
+  xlab("Hrs per week devoted to writing") +
+  ylab("All publications")
