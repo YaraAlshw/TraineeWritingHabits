@@ -568,9 +568,7 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 #I do not track my writing progress
 #other
 
-# Density plot for sentiment and first author pubs ====
-#boxplot for now
-
+# boxplot for sentiment and first author pubs ====
 writing_box <- ggplot(aes(x = writing_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "writing_word")])) +
   geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
   xlab("Feelings about scientific writing") +
@@ -592,31 +590,30 @@ combined_box <- ggarrange(common.legend = TRUE,
 ggsave(combined_box, filename = "combined_box.png", dpi = 300, width = 8, height = 8)
 
 ### density plot
-sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
-  geom_hline(yintercept = 0.5, linetype = "dotted") +
-  ggdist::stat_halfeye(
-    adjust = 1,
-    normalize = "all",
-    position = position_dodge(width = 0.5),
-    ## set slab interval to show IQR and 95% data range
-    .width = c(.5, .95),
-    slab_alpha = 0.7) +
-  theme_bw(base_size = 14) +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  ) +
-  ylim(0, 20) +
-  ylab("First author publications") +
-  xlab("Sentiment towards peer review") +
-  ggtitle("Density Plot of setiment towards peer review")
+#sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),    #           data = na.omit(survey[,c("firstauthor_pubs", #"review_word")])) +
+#  geom_hline(yintercept = 0.5, linetype = "dotted") +
+#  ggdist::stat_halfeye(
+#    adjust = 1,
+#    normalize = "all",
+#    position = position_dodge(width = 0.5),
+#    ## set slab interval to show IQR and 95% data range
+#    .width = c(.5, .95),
+#    slab_alpha = 0.7) +
+#  theme_bw(base_size = 14) +
+#  theme(
+#    panel.grid.major.y = element_blank(),
+#    panel.grid.minor.y = element_blank(),
+#    panel.grid.major.x = element_blank(),
+#    panel.grid.minor.x = element_blank()
+#  ) +
+#  ylim(0, 20) +
+#  ylab("First author publications") +
+#  xlab("Sentiment towards peer review") +
+#  ggtitle("Density Plot of setiment towards peer review")
 
+#print(sent_plot)
 
-print(sent_plot)
-
-ggsave(fiveyrshift_plot, filename = "Output_Figures/FiveYrShifts.png", dpi = 300, width = 8, height = 5)
+#ggsave(fiveyrshift_plot, filename = "Output_Figures/FiveYrShifts.png", dpi = 300, width = 8, height = 5)
 
 # Plotting histograms ====
 
@@ -781,11 +778,24 @@ print(analysis5a_plot)
 ggsave(analysis5a_plot, filename = "analysis5a_plot.png", dpi = 300, width = 8, height = 8)
 
 
-### ggplot for writing vs first author pubs
+# ggplot for writing vs first author pubs ====
 # does writing more mean more papers? YES
-writepubs <- ggplot(aes(x = hrs_wk_writing, y = pubtotal), data = survey) +
+writepubs <- ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = survey) + scale_fill_viridis() +
+  geom_point(pch = 21, aes(fill = hrs_wk_writing), size = 4) +
+  theme_bw(base_size = 14) +
+  xlab("Hrs per week devoted to writing") +
+  ylab("First author publications")
+
+print(writepubs)
+ggsave(writepubs, filename = "writepubs.png", dpi = 300, width = 10, height = 8)
+
+
+#code from Freya
+writepubs <- ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = survey) +
   geom_point(pch = 21, aes(size = graduate_yrs, fill = postdoc_yrs), alpha = 0.5) +
   scale_fill_viridis() +
   theme_bw(base_size = 14) +
   xlab("Hrs per week devoted to writing") +
   ylab("All publications")
+print(writepubs)
+
