@@ -247,9 +247,6 @@ ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height 
 
 
 # Analysis 4: time per week spent writing and attitude toward writing and review ====
-# plan writing model
-## These may need to be recoded as -1, 0, and 1. I'm not sure stan_glm does it automatically
-
 #survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
 #survey$review_word <- factor(survey$review_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions   ##don't need to do this anymore b/c we set intercept to 0
 
@@ -330,19 +327,11 @@ bayestestR::describe_posterior(
   centrality = "all"
 )
 summary(model_bayes4, digits = 3)
-posteriors_model_bayes4 <- describe_posterior(model_bayes4)
 
 loo(model_bayes4) #check if there are problems, values influencing the model
-prior_summary(model_bayes4)
-summary(model_bayes4, digits = 3)
-posterior_interval(
-  model_bayes4,
-  prob = 0.9)
-
-# for a nicer table
-print_md(posteriors_model_bayes4, digits = 3)
 
 launch_shinystan(model_bayes4)
+
 #b) review process word
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
@@ -551,12 +540,15 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 #other
 
 # boxplot for sentiment and first author pubs ====
-writing_box <- ggplot(aes(x = writing_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "writing_word")])) +
-  geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
+writing_box <-
+  ggplot(aes(x = writing_word, y = firstauthor_pubs), 
+         data = na.omit(survey[, c("firstauthor_pubs", "writing_word")])) +
+  geom_boxplot(fill = c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
   xlab("Feelings about scientific writing") +
   ylab("First author publications") 
 
-review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),               data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
+review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),
+                     data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
   geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
   xlab("Feelings about peer review") +
   ylab("First author publications")  
