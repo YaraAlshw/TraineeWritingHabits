@@ -182,21 +182,27 @@ posterior_interval(
 plot(plan_model)
 launch_shinystan(plan_model)
 
-#Analysis 3: writing tracking method (binomial) and pub total, and writing per week====
+#Analysis 3: writing tracking method (binomial) and first author pub total ====
 
-model_bayes7 <- stan_glm(firstauthor_pubs ~ 
-                           writing_tracking_reco,
-                         iter = 10000,
-                         prior = t_prior,
-                         prior_intercept = t_prior,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000,
-                         data= survey, 
-                         family = gaussian(link = "log"),
-                         seed=111)
+model_bayes7 <- stan_glm(
+  firstauthor_pubs ~
+    0 +
+    tracking_advisor +
+    tracking_group +
+    tracking_elec +
+    tracking_note +
+    tracking_no,
+  iter = 20000,
+  prior = t_prior,
+  prior_intercept = t_prior,
+  cores = 3,
+  chains = 4,
+  warmup = 5000,
+  data = survey,
+  family = gaussian(link = "log"),
+  seed = 111
+)
 
-describe_posterior(model_bayes7, test = c("p_direction", "rope", "bayesfactor"))
 
 plot(model_bayes7)
 
@@ -204,13 +210,13 @@ bayestestR::describe_posterior(
   model_bayes7,
   effects = "all",
   component = "all",
-  test = c("p_direction", "p_significance"),
+  test = c("p_direction", "p_significance", "bayesfactor"),
   centrality = "all"
 )
 summary(model_bayes7, digits = 3)
 posteriors_model_bayes7 <- posterior(model_bayes7)
 
-loo(model_bayes7) #check if there are problems, values influencing the model
+loo(model_bayes7, k_threshold = 0.7) #check if there are problems, values influencing the model
 prior_summary(model_bayes7)
 summary(model_bayes7, digits = 3)
 posterior_interval(
