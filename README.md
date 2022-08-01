@@ -22,22 +22,3 @@
 ### Code in this repository
 * [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
 * [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
-
-### Tasks left to do
-- [ ] Upload model code
-- [x] Show group how to upload code to GitHub and update in R
-- [x] Ana upload figure code
-- [ ] Standardize figures (Freya and Ana)
-- [x] Finalize box content (Yara and Ana)
-- [ ] Finalize box in photoshop (Yara and Ana)
-- [x] Add in other writing challenges (Yara)
-- [x] Edit writing resources paragraph in intro (Yara)
-- [x] Authorship order (finalize in January)
-- [x] Some remaining questions on nitty gritty
-- [x] Update citations (Freya)
-- [x] Have Mary edit draft
-- [x] Friendly review -- sent to Tian Guo
-- [ ] Incorporate suggested revisions
-- [ ] Reformat for Ecosphere
-- [ ] ~~Draft inquiry letter?~~
-- [ ] Submit! :tada:
