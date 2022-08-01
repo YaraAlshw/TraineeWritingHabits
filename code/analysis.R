@@ -427,7 +427,7 @@ review_box2 <- ggplot(aes(x = review_word, y = firstauthor_pubs),
   ylab("First author publications")
 print(review_box2)
 
-writing_box <- ggplot(aes(y = firstauthor_pubs, x = writing_word, fill = stage),
+writing_box <- ggplot(aes(y = firstauthor_pubs, x = writing_word), #, fill = stage),
                       data = na.omit(survey[,c("firstauthor_pubs", "writing_word", "stage")])) +
   geom_boxplot() + theme_bw(base_size = 14) +
   xlab("Feelings about writing process") +
