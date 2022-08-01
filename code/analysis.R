@@ -214,16 +214,31 @@ bayestestR::describe_posterior(
   centrality = "all"
 )
 summary(model_bayes7, digits = 3)
-posteriors_model_bayes7 <- posterior(model_bayes7)
+
 
 loo(model_bayes7, k_threshold = 0.7) #check if there are problems, values influencing the model
 prior_summary(model_bayes7)
-summary(model_bayes7, digits = 3)
-posterior_interval(
-  model_bayes7,
-  prob = 0.9)
 
+# check model fit
 launch_shinystan(model_bayes7)
+
+posterior2 <- as.matrix(model_bayes7)
+
+color_scheme_set("darkgray")
+analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
+                             pars = c("tracking_advisor",
+                                      "tracking_group",
+                                      "tracking_elec",
+                                      "tracking_note",
+                                      "tracking_no")
+                             ) + # parameters of interest as they are in the model output
+  #plot_title +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(analysis2_plot)
 
 #writing per week
 model_bayes7b <- stan_glm(hrs_wk_writing ~ 
