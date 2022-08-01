@@ -232,42 +232,18 @@ analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
                                       "tracking_note",
                                       "tracking_no")
                              ) + # parameters of interest as they are in the model output
-  #plot_title +
+  scale_y_discrete(labels = c('Advisor check-ins',
+                              'Group check-ins',
+                              'Electronic notes',
+                              'Physical notes',
+                              'No tracking')) +
   theme_classic(base_size = 14) +
   geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
   # set your own labels
   xlab("Posterior distribution of parameter") +
   theme(panel.border = element_rect(fill = NA, size = 1))
 print(analysis2_plot)
-
-#writing per week
-model_bayes7b <- stan_glm(hrs_wk_writing ~ 
-                            writing_tracking_reco,
-                          iter = 10000,
-                          cores = 3,
-                          chains = 4,
-                          warmup = 5000,
-                          family = gaussian(link = "log"),
-                          data= survey, seed=111)
-
-plot(model_bayes7b)
-
-bayestestR::describe_posterior(
-  model_bayes7b,
-  effects = "all",
-  component = "all",
-  test = c("p_direction", "p_significance"),
-  centrality = "all"
-)
-summary(model_bayes7b, digits = 3)
-posteriors_model_bayes7b <- posterior(model_bayes7b)
-
-loo(model_bayes7b) #check if there are problems, values influencing the model
-prior_summary(model_bayes7b)
-summary(model_bayes7b, digits = 3)
-posterior_interval(
-  model_bayes7b,
-  prob = 0.9)
+ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height = 5, width = 5)
 
 
 # Analysis 4: time per week spent writing and attitude toward writing and review ====
