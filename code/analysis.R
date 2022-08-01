@@ -1,38 +1,39 @@
-#Copied from "covid-identity" Github repo by YAA on 4/29/2022. Will edit to remove non-relevant code
+## Analysis code for Alshwairikh and Fanton et al.
+# Last edit August 2022
 
-#install packages if needed
-install.packages("viridis")
-install.packages("tm")
-install.packages("ggpubr")
-install.packages("rstanarm")
-install.packages("easystats", repos = "https://easystats.r-universe.dev")
-install.packages("logspline")
-install.packages("BayesFactor")
-install.packages("shinystan")
+# #install packages if needed
+# install.packages("viridis")
+# install.packages("tm")
+# install.packages("ggpubr")
+# install.packages("rstanarm")
+# install.packages("easystats", repos = "https://easystats.r-universe.dev")
+# install.packages("logspline")
+# install.packages("BayesFactor")
+# install.packages("shinystan")
 
 
 # libraries
-library(ggplot2) 
+library(ggplot2)
 library(viridis)
 library(RColorBrewer)
-library(tm)
+# library(tm)
 library(dplyr)
 library(ggpubr)
 library(rstanarm)
-library(remotes)
+# library(remotes)
 library(easystats)
 library(tidyr)
-library(ggridges)
-library(glue)
+# library(ggridges)
+# library(glue)
 library(bayesplot)
 library(bayestestR)
-library(logspline)
-library(car)
+# library(logspline)
+# library(car)
 library(BayesFactor) 
 library(shinystan)
 
 # Load data ====
-survey <- read.csv("data/dataclean_May22.csv", header = TRUE)
+survey <- read.csv("data/dataclean_Jul22.csv", header = TRUE)
 
 empty_as_na <- function(x){ # empty_as_na function did not exist so I found this code to create the function
   if("factor" %in% class(x)) x <- as.character(x) ## since ifelse wont work with factors
@@ -51,29 +52,14 @@ survey$review_word <- as.factor(survey$review_word)
 survey$plan_writing <- as.factor(survey$plan_writing)
 survey$writing_tracking_reco <- as.factor(survey$writing_tracking_reco)
 
-# create new columns for total training and pubs
+# # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
-survey$pubtotal <- rowSums(survey[,c("firstauthor_pubs", "coauthor_pubs")], na.rm=TRUE)
-
-# create a new column for career stage
-survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
-
-# Make two dataframes for grads and postdocs ----
-grads <- subset(survey, is.na(survey$postdoc_yrs))
-postdocs <- subset(survey, !is.na(survey$postdoc_yrs))
+# survey$pubtotal <- rowSums(survey[,c("firstauthor_pubs", "coauthor_pubs")], na.rm=TRUE)
+# 
+# # create a new column for career stage
+# survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
 
 
-# Demographics ----
-survey %>%
-  group_by(stage) %>%
-  summarize(avgfirst = mean(firstauthor_pubs, na.rm = TRUE),
-            avgco = mean(coauthor_pubs, na.rm = TRUE),
-            sdfirst = sd(firstauthor_pubs, na.rm = TRUE),
-            sdco = sd(coauthor_pubs, na.rm = TRUE))
-
-
-#Notes: report Rhat being lass than 1.01, record neff, want mean and median to be about the same, report median and 95 CI
-#multiple regression, can add random effect (stan_gmler), X ` predictors, iter start with 2000 then increase when model is right, 4 chains means you run it 4 times (keep as 4), need at least 20,000 for final product (chains*iter), cores is # cores used by computer, warmup discards the first 5000, usually throw away half of iter as warmup, order doesn't matter, set seed for reproducibality
 
 #Analysis 1: first author pubs vs. time spent writing ====
 
@@ -81,87 +67,86 @@ t_prior <- student_t(df = 1, location = 0, scale = 2.5)
 
 model_bayes1a <- stan_glm(firstauthor_pubs ~ 
                             hrs_wk_writing,
-                          iter = 10000,
+                          iter = 20000,
                           prior = t_prior,
                           prior_intercept = t_prior,
                           cores = 3,
                           chains = 4,
                           warmup = 5000, 
-                          data= survey, seed=111) #All data
+                          data= survey, seed=111)
 #interpret
 describe_posterior(model_bayes1a, test = c("p_direction", "rope", "bayesfactor"))
 summary(model_bayes1a, digits = 3)
 posteriors_model_bayes1a <- posterior(model_bayes1a)
 
-loo(model_bayes1a)
-prior_summary(model_bayes1a)
-posterior_interval(
-  model_bayes1a,
-  prob = 0.9)
-plot(model_bayes1a)
+loo(model_bayes1a) # fit is good
+# prior_summary(model_bayes1a) # if want to see priors we used
 
-posteriorx <- as.matrix(model_bayes1a)
-
+# shinystan to check for model fit
 launch_shinystan(model_bayes1a)
 
+# plot posterior fits to show uncertainty
+fits <- model_bayes1a %>% 
+  as_tibble() %>% 
+  rename(intercept = `(Intercept)`) %>% 
+  select(-sigma)
+fits
 
-# for all data combined how does writing time relate to training total
-model_bayesx <- stan_glm(hrs_wk_writing ~ trainingtot, 
-                         iter = 10000,
-                         cores = 3,
-                         chains = 4,
-                         warmup = 5000, 
-                         data= survey, seed=111)
-summary(model_bayesx, digits = 3)
-posteriorsx <- describe_posterior(model_bayesx)
+# randomly plot 500 posterior draws
+# aesthetic controllers
+n_draws <- 200
+alpha_level <- .15
+col_draw <- "grey60"
+col_median <-  "#405364"
 
-print_md(posteriorsx, digits = 3)
-
-launch_shinystan(model_bayesx)
-
-posterior_interval(
-  model_bayes7b,
-  prob = 0.9)
-
-# graph of relationship total pubs and total training
-linpubs <- ggplot(aes(x = trainingtot, y = pubtotal), data = survey) +
-  geom_point(aes(size = postdoc_yrs), alpha = 0.5) +
-  scale_fill_viridis() +
-  theme_bw(base_size = 14) +
-  xlab("Total yrs as trainee (grad + postdoc)") +
-  ylab("Total publications")
-print(linpubs)
-
-# Correlation between pubtotal and total training years
-cor(survey$pubtotal, survey$trainingtot, method = "pearson")
-cor(survey$pubtotal, survey$trainingtot, method = "spearman")
-
-# relationship first author pubs and total training 
-linpubs <- ggplot(aes(x = trainingtot, y = firstauthor_pubs), data = survey) +
-  geom_point(pch = 21, aes(size = postdoc_yrs, fill = postdoc_yrs), alpha = 0.5) +
-  scale_fill_viridis() +
-  theme_bw(base_size = 14) +
-  xlab("Total yrs as trainee (grad + postdoc)") +
-  ylab("First-author publications")
 
 # does writing more mean more papers? YES
-writepubs <- ggplot(aes(x = hrs_wk_writing, y = pubtotal), data = survey) +
-  geom_point(pch = 21, aes(size = graduate_yrs, fill = postdoc_yrs), alpha = 0.5) +
-  scale_fill_viridis() +
-  theme_bw(base_size = 14) +
+writepubs <-
+  ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = survey) +
+  geom_jitter(
+    width = 0.2,
+    pch = 21,
+    aes(fill = trainingtot),
+    size = 3,
+    alpha = 0.7
+  ) +
+  # scale_fill_viridis(name = "Training total (yrs)") +
+  scale_fill_gradientn(
+    colours = c(
+      "#EDA09C",
+      "#DF858E",
+      "#C6798F",
+      "#966480",
+      "#6C5B7B",
+      "#585B74",
+      "#405364"
+    ),
+    name = "Training total (yrs)"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(panel.border = element_rect(fill = NA, size = 1)) +
+  geom_abline(
+    aes(intercept = intercept, slope = hrs_wk_writing), 
+    data = slice_sample(fits, n = n_draws), 
+    color = col_draw, 
+    alpha = alpha_level
+  ) + 
+  # Plot the median values in blue
+  geom_abline(
+    intercept = median(fits$intercept), 
+    slope = median(fits$hrs_wk_writing), 
+    size = 1, 
+    color = col_median
+  ) +
   xlab("Hrs per week devoted to writing") +
-  ylab("All publications")
+  ylab("First-authored publications")
+print(writepubs)
 
-writetrain <- ggplot(aes(y = hrs_wk_writing, x = trainingtot), data = survey) +
-  geom_point(pch = 21, aes(size = graduate_yrs, fill = postdoc_yrs), alpha = 0.5) +
-  scale_fill_viridis() +
-  theme_bw(base_size = 14) +
-  ylab("Hrs per week devoted to writing") +
-  xlab("Yrs as trainee") 
+# save figure
+ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 300, height = 4, width = 6)
+
 
 # Analysis 2: plan writing (binomial) and pub total ====
-## I think this should be y = first author pubs, and it should be whether planning writing predicts pubs
-#survey$plan_writing <- as.numeric(survey$plan_writing) 
 survey$plan_writing <- as.factor(survey$plan_writing) 
 
 plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
