@@ -22,3 +22,15 @@
 ### Code in this repository
 * [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
 * [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
+
+# To do
+- [ ] Finalize figures (YA, AF) - theme_classic(base_size = 14), color scale, make multiplots in R or photoshop
+- [x] Run new analyses of individual behaviors and make figures (FR)
+- [ ] Clean up data for archival (YA?)
+- [ ] Clean up repo (FR) - Will YA check over areas I've commented out and see if we can delete?
+- [ ] Write draft cover letter (KP)
+- [ ] Update results and methods (YA, AF, FR)
+- [ ] Reformat manuscript for submission (YA, AF)
+- [ ] Contact journal about fit (YA)
+- [ ] Proofread and streamline (MB)
+- [ ] Send manuscript to Marlyse (YA)
