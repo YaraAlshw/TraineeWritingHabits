@@ -155,23 +155,21 @@ plan_model <- stan_glm(firstauthor_pubs ~ 0 +
                          plan_regular +
                          plan_deadline +
                          plan_no,
-                       iter = 10000,
+                       iter = 20000,
                        prior = t_prior,
                        prior_intercept = t_prior,
                        cores = 3,
                        chains = 4,
-                       warmup = 5000, 
+                       warmup = 10000, 
                        data = survey,
                        seed = 111,
                        family = gaussian(link = "log"))
-
-describe_posterior(plan_model, test = c("p_direction", "rope", "bayesfactor"))
 
 bayestestR::describe_posterior(
   plan_model,
   effects = "all",
   component = "all",
-  test = c("p_direction", "p_significance"),
+  test = c("p_direction", "p_significance", "bayesfactor"),
   centrality = "all"
 )
 
@@ -179,8 +177,8 @@ summary(plan_model, digits = 3)
 posteriors_plan_model <- posterior(plan_model)
 
 loo(plan_model)
-prior_summary(plan_model)
-summary(plan_model, digits = 3)
+# prior_summary(plan_model)
+
 
 # plot(plan_model) # check out posteriors
 launch_shinystan(plan_model)
@@ -227,7 +225,7 @@ model_bayes7 <- stan_glm(
   prior_intercept = t_prior,
   cores = 3,
   chains = 4,
-  warmup = 5000,
+  warmup = 10000,
   data = survey,
   # data = nonzero,
   family = gaussian(link = "log"),
@@ -253,8 +251,8 @@ prior_summary(model_bayes7)
 # check model fit
 launch_shinystan(model_bayes7)
 
+# plot model
 posterior2 <- as.matrix(model_bayes7)
-
 color_scheme_set("darkgray")
 analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
                              pars = c("tracking_advisor",
@@ -276,7 +274,7 @@ ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height 
 
 
 
-### make combined plot
+### make combined plot ----
 multi <- cowplot::plot_grid(
                 plan_plot,
                 analysis2_plot,
@@ -306,17 +304,10 @@ attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word,
                             seed = 111,
                             data = survey)
 
-describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor")) 
-posteriors_attitude_model1 <- describe_posterior(attitude_model1)
+posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = = c("p_direction", "rope", "bayesfactor"))
 loo(attitude_model1)
-prior_summary(attitude_model1)
+# prior_summary(attitude_model1)
 summary(attitude_model1, digits = 3)
-posterior_interval(
-  attitude_model1,
-  prob = 0.9)
-plot(attitude_model1)
-# for a nicer table
-print_md(posteriors_attitude_model1, digits = 3)
 
 launch_shinystan(attitude_model1)
 
@@ -331,18 +322,11 @@ attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
 
 describe_posterior(attitude_model2, test = c("p_direction", "rope", "bayesfactor")) 
 summary(attitude_model2)
-posteriors_attitude_model2 <- describe_posterior(attitude_model2)
 loo(attitude_model2)
-prior_summary(attitude_model2)
-summary(attitude_model2, digits = 3)
-posterior_interval(
-  attitude_model2,
-  prob = 0.9)
+# prior_summary(attitude_model2)
 plot(attitude_model2)
 
-# for a nicer table
-print_md(posteriors_attitude_model2, digits = 3)
-
+# explore model fit
 launch_shinystan(attitude_model2)
 
 #Analysis 5: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
