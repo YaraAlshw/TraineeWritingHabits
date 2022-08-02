@@ -1,4 +1,5 @@
 ## Analysis code for Alshwairikh and Fanton et al.
+# Code by F. Rowland and Y. Alshwairikh
 # Last edit August 2022
 
 # #install packages if needed
@@ -31,6 +32,7 @@ library(bayestestR)
 # library(car)
 library(BayesFactor) 
 library(shinystan)
+library(cowplot)
 
 # Load data ====
 survey <- read.csv("data/dataclean_Jul22.csv", header = TRUE)
@@ -49,8 +51,8 @@ str(survey)
 survey$writing_word <- as.factor(survey$writing_word)
 survey$review_word <- as.factor(survey$review_word)
 
-survey$plan_writing <- as.factor(survey$plan_writing)
-survey$writing_tracking_reco <- as.factor(survey$writing_tracking_reco)
+# survey$plan_writing <- as.factor(survey$plan_writing)
+# survey$writing_tracking_reco <- as.factor(survey$writing_tracking_reco)
 
 # # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
@@ -149,7 +151,10 @@ ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 300, height = 4
 # Analysis 2: plan writing (binomial) and pub total ====
 survey$plan_writing <- as.factor(survey$plan_writing) 
 
-plan_model <- stan_glm(firstauthor_pubs ~ plan_writing,
+plan_model <- stan_glm(firstauthor_pubs ~ 0 +
+                         plan_regular +
+                         plan_deadline +
+                         plan_no,
                        iter = 10000,
                        prior = t_prior,
                        prior_intercept = t_prior,
@@ -176,21 +181,46 @@ posteriors_plan_model <- posterior(plan_model)
 loo(plan_model)
 prior_summary(plan_model)
 summary(plan_model, digits = 3)
-posterior_interval(
-  plan_model,
-  prob = 0.9)
-plot(plan_model)
+
+# plot(plan_model) # check out posteriors
 launch_shinystan(plan_model)
 
+
+# does planning mean more papers?
+posterior2 <- as.matrix(plan_model)
+
+color_scheme_set("darkgray")
+plan_plot <- bayesplot::mcmc_intervals(posterior2,
+                                            pars = c("plan_regular", "plan_deadline",
+                                                     "plan_no")) +
+  scale_y_discrete(labels = c('Regularly schedule writing',
+                              'Write before deadlines',
+                              'No writing schedule')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(plan_plot)
+ggsave(plan_plot, filename = "figures/planning_fig.png", dpi = 300, height = 5, width = 5)
+
+
+
+
+
+
 #Analysis 3: writing tracking method (binomial) and first author pub total ====
+
+# two models: (1) with all data and (2) with first author pubs = 0 removed
+nonzero <- survey %>%
+  dplyr::filter(firstauthor_pubs > 0)
 
 model_bayes7 <- stan_glm(
   firstauthor_pubs ~
     0 +
     tracking_advisor +
     tracking_group +
-    tracking_elec +
-    tracking_note +
+    tracking_individ +
     tracking_no,
   iter = 20000,
   prior = t_prior,
@@ -199,6 +229,7 @@ model_bayes7 <- stan_glm(
   chains = 4,
   warmup = 5000,
   data = survey,
+  # data = nonzero,
   family = gaussian(link = "log"),
   seed = 111
 )
@@ -228,14 +259,12 @@ color_scheme_set("darkgray")
 analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
                              pars = c("tracking_advisor",
                                       "tracking_group",
-                                      "tracking_elec",
-                                      "tracking_note",
+                                      "tracking_individ",
                                       "tracking_no")
                              ) + # parameters of interest as they are in the model output
   scale_y_discrete(labels = c('Advisor check-ins',
-                              'Group check-ins',
-                              'Electronic notes',
-                              'Physical notes',
+                              'Writing group check-ins',
+                              'Individual tracking',
                               'No tracking')) +
   theme_classic(base_size = 14) +
   geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
@@ -245,6 +274,20 @@ analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
 print(analysis2_plot)
 ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height = 5, width = 5)
 
+
+
+### make combined plot
+multi <- cowplot::plot_grid(
+                plan_plot,
+                analysis2_plot,
+                align = "hv",
+                nrow = 2,
+                ncol = 1,
+                labels = c("a", "b"),
+                label_size = 14)
+print(multi)
+
+ggsave(multi, filename = "figures/writingplanningmulti.png", dpi = 300, height = 6, width = 6)
 
 # Analysis 4: time per week spent writing and attitude toward writing and review ====
 #survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
@@ -358,9 +401,7 @@ posteriors_model_bayes4b <- describe_posterior(model_bayes4b)
 loo(model_bayes4b) #check if there are problems, values influencing the model
 prior_summary(model_bayes4b)
 summary(model_bayes4b, digits = 3)
-posterior_interval(
-  model_bayes4b,
-  prob = 0.9)
+
 
 # for a nicer table
 print_md(posteriors_model_bayes4b, digits = 3)
