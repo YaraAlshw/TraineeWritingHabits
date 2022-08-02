@@ -546,10 +546,6 @@ posteriors_model_bayes5 <- posterior(model_bayes5)
 
 loo(model_bayes5) #check if there are problems, values influencing the model
 prior_summary(model_bayes5)
-summary(model_bayes5, digits = 3)
-posterior_interval(
-  model_bayes5,
-  prob = 0.9)
 
 launch_shinystan(model_bayes5)
 
