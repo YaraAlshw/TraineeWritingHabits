@@ -20,7 +20,8 @@
 * [Twitter thread on revisions](<https://twitter.com/ellycknight/status/1456339626310782978>) that may be useful
 
 ### Code in this repository
-* [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>)
+* [analysis.R](<code/analysis.R>): Thie script file includes code for models and figures from the manuscript
+* [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>). Ultimately we went with unanimous co-author agreement because too many of our words were missing from established sentiment dictionaries. The results from these analyses closely match the one in the paper.
 * [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
 
 ### Tables here for a minute for writing (should this be in supplementary material?)
