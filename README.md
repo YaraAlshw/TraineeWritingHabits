@@ -38,15 +38,3 @@ tracking_advisor |   0.05 |  0.04 |  0.07 | [-0.34, 0.37] | 60.77% | 0.38 | 1.00
 tracking_group   |  -0.21 | -0.28 | -0.12 | [-1.25, 0.37] | 73.67% | 0.62 | 1.000 |  6976.00 |    0.121
 tracking_individ |   0.74 |  0.72 |  0.76 | [ 0.29, 1.08] | 99.84% | 1.00 | 1.000 | 37428.00 |     7.54
 tracking_no      |   1.25 |  1.24 |  1.25 | [ 1.03, 1.43] |   100% | 1.00 | 1.000 | 42310.00 | 2.71e+09
-
-# To do
-- [ ] Finalize figures (YA, AF) - theme_classic(base_size = 14), color scale, make multiplots in R or photoshop
-- [x] Run new analyses of individual behaviors and make figures (FR)
-- [ ] Clean up data for archival (YA?)
-- [ ] Clean up repo (FR) - Will YA check over areas I've commented out and see if we can delete?
-- [ ] Write draft cover letter (KP)
-- [ ] Update results and methods (YA, AF, FR)
-- [ ] Reformat manuscript for submission (YA, AF)
-- [ ] Contact journal about fit (YA)
-- [ ] Proofread and streamline (MB)
-- [ ] Send manuscript to Marlyse (YA)
