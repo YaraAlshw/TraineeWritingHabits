@@ -311,6 +311,7 @@ summary(attitude_model1, digits = 3)
 
 launch_shinystan(attitude_model1)
 
+
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
                             iter = 10000,
@@ -359,6 +360,26 @@ loo(model_bayes4) #check if there are problems, values influencing the model
 
 launch_shinystan(model_bayes4)
 
+#pd plot for analysis 5a
+posterior4 <- as.matrix(model_bayes4)
+
+color_scheme_set("darkgray")
+senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                            pars = c("writing_wordnegative", "writing_wordneutral",
+                                                     "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_sci_plot)
+ggsave(senti_sci_plot, filename = "figures/sentiment_sci_fig.png", dpi = 300, height = 5, width = 5)
+
+
+
 #b) review process word
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
@@ -391,6 +412,24 @@ summary(model_bayes4b, digits = 3)
 print_md(posteriors_model_bayes4b, digits = 3)
 
 launch_shinystan(model_bayes4b)
+
+#pd plot for analysis 5b
+posterior4b <- as.matrix(model_bayes4b)
+
+color_scheme_set("darkgray")
+senti_rev_plot <- bayesplot::mcmc_intervals(posterior4b,
+                                            pars = c("review_wordnegative", "review_wordneutral",
+                                                     "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_rev_plot)
+ggsave(senti_rev_plot, filename = "figures/sentiment_rev_fig.png", dpi = 300, height = 5, width = 5)
 
 # writing success (i.e., pubs) NOT linked to peer-review attitude
 review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
@@ -564,25 +603,32 @@ contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothe
 writing_box <-
   ggplot(aes(x = writing_word, y = firstauthor_pubs), 
          data = na.omit(survey[, c("firstauthor_pubs", "writing_word")])) +
-  geom_boxplot(fill = c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
+  geom_violin(fill = c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
   xlab("Feelings about scientific writing") +
   ylab("First author publications") 
 
 review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),
                      data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
-  geom_boxplot(fill=c("#fde725", "#21918c", "#443983")) + theme_bw(base_size = 14) +
+  geom_boxplot(fill=c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
   xlab("Feelings about peer review") +
   ylab("First author publications")  
 
-combined_box <- ggarrange(common.legend = TRUE,
-          writing_box,
-          review_box,
-          align = "hv", 
-          nrow = 2,
-          labels = "AUTO"
-)
+#Create 4 panel figure of the pd plots and box plot for sentiment analysis
+multi_panel <- ggarrange(common.legend = TRUE,
+                          senti_sci_plot,
+                          writing_box,
+                          senti_rev_plot,
+                          review_box,
+                          align = "hv", 
+                          nrow = 2,
+                          ncol = 2,
+                          labels = "AUTO")
 
-ggsave(combined_box, filename = "combined_box.png", dpi = 300, width = 8, height = 8)
+print(multi_panel)
+
+
+#ggsave(combined_box, filename = "combined_box.png", dpi = 300, width = 8, height = 8)
+ggsave(multi_panel, filename = "multi_panel.png", dpi = 300, width = 12, height = 8)
 
 ### density plot
 #sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),    #           data = na.omit(survey[,c("firstauthor_pubs", #"review_word")])) +
