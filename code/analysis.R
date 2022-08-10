@@ -2,34 +2,17 @@
 # Code by F. Rowland and Y. Alshwairikh
 # Last edit August 2022
 
-# #install packages if needed
-# install.packages("viridis")
-# install.packages("tm")
-# install.packages("ggpubr")
-# install.packages("rstanarm")
-# install.packages("easystats", repos = "https://easystats.r-universe.dev")
-# install.packages("logspline")
-# install.packages("BayesFactor")
-# install.packages("shinystan")
-
-
-# libraries
+# Load libraries
 library(ggplot2)
 library(viridis)
 library(RColorBrewer)
-# library(tm)
 library(dplyr)
 library(ggpubr)
 library(rstanarm)
-# library(remotes)
 library(easystats)
 library(tidyr)
-# library(ggridges)
-# library(glue)
 library(bayesplot)
 library(bayestestR)
-# library(logspline)
-# library(car)
 library(BayesFactor) 
 library(shinystan)
 library(cowplot)
@@ -46,15 +29,13 @@ empty_as_na <- function(x){ # empty_as_na function did not exist so I found this
 survey <- survey %>% mutate_each(funs(empty_as_na)) 
 
 # convert columns from character to factor
-str(survey)
-
 survey$writing_word <- as.factor(survey$writing_word)
 survey$review_word <- as.factor(survey$review_word)
 
 # # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
 
-#Set priors and scale for all analyses
+#Set priors and scale for all Bayesian analyses
 t_prior <- student_t(df = 1, location = 0, scale = 2.5)
 
 #Analysis 1: first author pubs vs. time spent writing ====
@@ -194,10 +175,6 @@ print(plan_plot)
 ggsave(plan_plot, filename = "figures/planning_fig.png", dpi = 300, height = 5, width = 5)
 
 
-
-
-
-
 #Analysis 3: writing tracking method (binomial) and first author pub total ====
 
 # two models: (1) with all data and (2) with first author pubs = 0 removed
@@ -265,7 +242,7 @@ ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height 
 
 
 
-### make combined plot ----
+### make combined plot for analysis 1 & 2----
 multi <- cowplot::plot_grid(
                 plan_plot,
                 analysis2_plot,
@@ -278,10 +255,7 @@ print(multi)
 
 ggsave(multi, filename = "figures/writingplanningmulti.png", dpi = 300, height = 6, width = 6)
 
-# Analysis 4: time per week spent writing and attitude toward writing and review ====
-#survey$writing_word <- factor(survey$writing_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions
-#survey$review_word <- factor(survey$review_word, levels = c("neutral", "negative", "positive")) #reorder the writing_word levels so the reference is "neutral" for lm functions   ##don't need to do this anymore b/c we set intercept to 0
-
+# Analysis 4: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
 levels(survey$writing_word)
 levels(survey$review_word)
 
@@ -369,8 +343,6 @@ senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
 print(senti_sci_plot)
 ggsave(senti_sci_plot, filename = "figures/sentiment_sci_fig.png", dpi = 300, height = 5, width = 5)
 
-
-
 #b) review process word
 model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
                            review_word,
@@ -422,110 +394,32 @@ senti_rev_plot <- bayesplot::mcmc_intervals(posterior4b,
 print(senti_rev_plot)
 ggsave(senti_rev_plot, filename = "figures/sentiment_rev_fig.png", dpi = 300, height = 5, width = 5)
 
-# writing success (i.e., pubs) NOT linked to peer-review attitude
-review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs, fill = stage), 
-                     data = na.omit(survey[,c("firstauthor_pubs", "review_word", "stage")])) +
-  geom_boxplot() + theme_bw(base_size = 14) +
+# Make combined plot of boxplot for sentiment and first author pubs and pd figures ====
+writing_box <-
+  ggplot(aes(x = writing_word, y = firstauthor_pubs), 
+         data = na.omit(survey[, c("firstauthor_pubs", "writing_word")])) +
+  geom_boxplot(fill = c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
+  xlab("Feelings about scientific writing") +
+  ylab("First author publications") 
+
+review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),
+                     data = na.omit(survey[,c("firstauthor_pubs", "review_word")])) +
+  geom_boxplot(fill=c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
   xlab("Feelings about peer review") +
-  ylab("First author publications")
-print(review_box)
+  ylab("First author publications")  
 
-review_box2 <- ggplot(aes(x = review_word, y = firstauthor_pubs), 
-                     data = na.omit(survey[,c("firstauthor_pubs", "review_word", "stage")])) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about peer review") +
-  ylab("First author publications")
-print(review_box2)
+#Create 4 panel figure of the pd plots and box plot for sentiment analysis
+multi_panel <- ggarrange(common.legend = TRUE,
+                         writing_box,
+                         review_box,
+                         senti_sci_plot,
+                         senti_rev_plot,
+                         align = "hv", 
+                         nrow = 2,
+                         ncol = 2,
+                         labels = "AUTO")
 
-writing_box <- ggplot(aes(y = firstauthor_pubs, x = writing_word), #, fill = stage),
-                      data = na.omit(survey[,c("firstauthor_pubs", "writing_word", "stage")])) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about writing process") +
-  ylab("First author publications")
-print(writing_box)
-
-ggplot(aes(y = writing_word, x = stage, fill = stage), data = survey) +
-  geom_boxplot() + 
-  theme_bw(base_size = 14)
-
-ggplot(survey, aes(fill = writing_word, x = stage)) + 
-  geom_bar(position="stack", stat="identity")
-
-ggplot(aes(x = review_word, y = pubtotal, fill = stage), 
-       data = survey) +
-  geom_boxplot() + theme_bw(base_size = 14) +
-  xlab("Feelings about peer review") +
-  ylab("Total publications")
-
-ggarrange(common.legend = TRUE,
-          writing_box, 
-          review_box, 
-          align = "hv", 
-          nrow = 2,
-          labels = "AUTO"
-)
-
-# Writing groups section ====
-# make writing groups figure
-# if else hell
-survey$GoalSetting <- ifelse(survey[,39]=="Improved",1, ifelse(survey[,39]=="No Change", 0, -1))
-survey$Reviews <- ifelse(survey[,40]=="Improved",1, ifelse(survey[,40]=="No Change", 0, -1))
-survey$Collaboration <- ifelse(survey[,41]=="Improved",1, ifelse(survey[,41]=="No Change", 0, -1))
-survey$Camaraderie <- ifelse(survey[,42]=="Improved",1, ifelse(survey[,42]=="No Change", 0, -1))
-survey$Skills <- ifelse(survey[,43]=="Improved",1, ifelse(survey[,43]=="No Change", 0, -1))
-survey$Starting <- ifelse(survey[,44]=="Improved",1, ifelse(survey[,44]=="No Change", 0, -1))
-survey$TimeManagement <- ifelse(survey[,45]=="Improved",1, ifelse(survey[,45]=="No Change", 0, -1))
-survey$Perfectionism <- ifelse(survey[,46]=="Improved",1, ifelse(survey[,46]=="No Change", 0, -1))
-survey$Anxiety <- ifelse(survey[,47]=="Improved",1, ifelse(survey[,47]=="No Change", 0, -1))
-survey$Imposter <- ifelse(survey[,48]=="Improved",1, ifelse(survey[,48]=="No Change", 0, -1))
-survey$Quality <- ifelse(survey[,49]=="Improved",1, ifelse(survey[,49]=="No Change", 0, -1))
-survey$Output <- ifelse(survey[,50]=="Improved",1, ifelse(survey[,50]=="No Change", 0, -1))
-
-# reshape the data
-library(tidyr)
-
-groups_wide <- survey[,c(7, 76:87)]
-groups_wide2 <- survey[,c(7, 39:50)]
-
-# The arguments to gather():
-# - data: Data object
-# - key: Name of new key column (made from names of data columns)
-# - value: Name of new value column
-# - ...: Names of source columns that contain values
-# - factor_key: Treat the new key column as a factor (instead of character vector)
-groups_long <- gather(groups_wide2, key = factor, value = rating, Goal.setting:Writing.output, factor_key=TRUE)
-groups_long
-
-require(dplyr)
-
-g <- groups_long %>%
-  group_by(factor, rating) %>%
-  summarise(cnt = n(), na.rm = TRUE) %>%
-  mutate(freq = round(cnt / sum(cnt), 3), na.rm = TRUE) %>% 
-  arrange(desc(freq))
-
-# remove NAs
-g2 <- as.data.frame(g[c(13:42),])
-
-# Build plot
-# use function likert() to plot likert data
-g2 <- ggplot()+
-  geom_bar(data = g2, aes(x = reorder(factor, cnt), y=cnt, fill=as.factor(rating)), position="stack", stat="identity")+
-  coord_flip() + 
-  ylab("Rating")+
-  xlab("Factor")+
-  scale_fill_brewer(palette="PRGn",
-                    name  ="Response",
-                    labels=c("Improved", "No Change", "Worsened"))+
-  theme(legend.position="bottom") +
-  theme_bw(base_size = 14) +
-  xlab("Accountability group effect") +
-  ylab("Number of respondents")
-#scale_x_discrete(limits=c("StronglyAgree", "Agree", "DontKnow","Disagree","StronglyDisagree"))
-g2
-
-View()
-
+print(multi_panel)
 
 #Analysis 6: pubs total and Writing support groups====
 
@@ -613,194 +507,6 @@ print(multi_panel)
 #ggsave(combined_box, filename = "combined_box.png", dpi = 300, width = 8, height = 8)
 ggsave(multi_panel, filename = "multi_panel.png", dpi = 300, width = 12, height = 8)
 
-### density plot
-#sent_plot <- ggplot(aes(x = review_word, y = firstauthor_pubs),    #           data = na.omit(survey[,c("firstauthor_pubs", #"review_word")])) +
-#  geom_hline(yintercept = 0.5, linetype = "dotted") +
-#  ggdist::stat_halfeye(
-#    adjust = 1,
-#    normalize = "all",
-#    position = position_dodge(width = 0.5),
-#    ## set slab interval to show IQR and 95% data range
-#    .width = c(.5, .95),
-#    slab_alpha = 0.7) +
-#  theme_bw(base_size = 14) +
-#  theme(
-#    panel.grid.major.y = element_blank(),
-#    panel.grid.minor.y = element_blank(),
-#    panel.grid.major.x = element_blank(),
-#    panel.grid.minor.x = element_blank()
-#  ) +
-#  ylim(0, 20) +
-#  ylab("First author publications") +
-#  xlab("Sentiment towards peer review") +
-#  ggtitle("Density Plot of setiment towards peer review")
-
-#print(sent_plot)
-
-#ggsave(fiveyrshift_plot, filename = "Output_Figures/FiveYrShifts.png", dpi = 300, width = 8, height = 5)
-
-# Plotting histograms ====
-
-#analysis 1
-# for specifying what you want in posteriors
-# plot of posteriors
-posterior <- as.matrix(model_bayes1a)
-
-# plot it
-
-analysis1_plot <- mcmc_areas(posterior,
-                           pars = "hrs_wk_writing",
-                           prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  #xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis1_plot)
-
-# analysis 2
-posterior2 <- as.matrix(plan_model)
-
-analysis2_plot <- mcmc_areas(posterior2,
-                             pars = "plan_writing1",
-                             prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis2_plot)
-
-#analysis 3
-posterior3 <- as.matrix(model_bayes7)
-
-analysis3_plot <- mcmc_areas(posterior3,
-                             pars = "writing_tracking_reco1",
-                             prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  #xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis3_plot)
-
-#analysis 4
-posterior4 <- as.matrix(attitude_model1)
-
-analysis4_plot <- mcmc_areas(posterior4,
-                             pars = c("writing_wordnegative","writing_wordneutral", "writing_wordpositive"),
-                             prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis4_plot)
-
-
-#analysis 4b
-posterior4b <- as.matrix(attitude_model2)
-
-analysis4b_plot <- mcmc_areas(posterior4b,
-                             pars = c("review_wordnegative","review_wordneutral", "review_wordpositive"),
-                             prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis4b_plot)
-
-
-#analysis 5a
-posterior5a <- as.matrix(model_bayes4)
-
-analysis5a_plot <- mcmc_areas(posterior5a,
-                              pars = c("writing_wordnegative","writing_wordneutral", "writing_wordpositive"),
-                              prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis5a_plot)
-
-
-#analysis 5b
-posterior5b <- as.matrix(model_bayes4b)
-
-analysis5b_plot <- mcmc_areas(posterior5b,
-                              pars = c("review_wordnegative","review_wordneutral", "review_wordpositive"),
-                              prob = 0.95) + # parameters of interest as they are in the model output
-  #plot_title +
-  theme_bw(base_size = 16) +
-  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
-  # set your own labels
-  xlab("Posterior distribution of parameter") +
-  theme(
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
-print(analysis5b_plot)
-
-#figures for paper
-print(analysis1_plot)
-print(analysis2_plot)
-print(analysis3_plot)
-print(analysis5a_plot)
-
-plots3 <- ggarrange(common.legend = TRUE,
-                    analysis1_plot,
-                    analysis2_plot,
-                    analysis3_plot,
-                    align = "hv", 
-                    nrow = 1,
-                    labels = "AUTO")
-
-ggsave(plots3, filename = "plots3.png", dpi = 300, width = 16, height = 6)
-
-print(analysis5a_plot)
-
-ggsave(analysis5a_plot, filename = "analysis5a_plot.png", dpi = 300, width = 8, height = 8)
-
 
 # ggplot for writing vs first author pubs ====
 # does writing more mean more papers? YES
@@ -814,12 +520,60 @@ print(writepubs)
 ggsave(writepubs, filename = "writepubs.png", dpi = 300, width = 10, height = 8)
 
 
-#code from Freya
-writepubs <- ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = survey) +
-  geom_point(pch = 21, aes(size = graduate_yrs, fill = postdoc_yrs), alpha = 0.5) +
-  scale_fill_viridis() +
+# Make writing groups figure ====
+# if else hell
+survey$GoalSetting <- ifelse(survey[,39]=="Improved",1, ifelse(survey[,39]=="No Change", 0, -1))
+survey$Reviews <- ifelse(survey[,40]=="Improved",1, ifelse(survey[,40]=="No Change", 0, -1))
+survey$Collaboration <- ifelse(survey[,41]=="Improved",1, ifelse(survey[,41]=="No Change", 0, -1))
+survey$Camaraderie <- ifelse(survey[,42]=="Improved",1, ifelse(survey[,42]=="No Change", 0, -1))
+survey$Skills <- ifelse(survey[,43]=="Improved",1, ifelse(survey[,43]=="No Change", 0, -1))
+survey$Starting <- ifelse(survey[,44]=="Improved",1, ifelse(survey[,44]=="No Change", 0, -1))
+survey$TimeManagement <- ifelse(survey[,45]=="Improved",1, ifelse(survey[,45]=="No Change", 0, -1))
+survey$Perfectionism <- ifelse(survey[,46]=="Improved",1, ifelse(survey[,46]=="No Change", 0, -1))
+survey$Anxiety <- ifelse(survey[,47]=="Improved",1, ifelse(survey[,47]=="No Change", 0, -1))
+survey$Imposter <- ifelse(survey[,48]=="Improved",1, ifelse(survey[,48]=="No Change", 0, -1))
+survey$Quality <- ifelse(survey[,49]=="Improved",1, ifelse(survey[,49]=="No Change", 0, -1))
+survey$Output <- ifelse(survey[,50]=="Improved",1, ifelse(survey[,50]=="No Change", 0, -1))
+
+# reshape the data
+groups_wide <- survey[,c(7, 76:87)]
+groups_wide2 <- survey[,c(7, 39:50)]
+
+# The arguments to gather():
+# - data: Data object
+# - key: Name of new key column (made from names of data columns)
+# - value: Name of new value column
+# - ...: Names of source columns that contain values
+# - factor_key: Treat the new key column as a factor (instead of character vector)
+groups_long <- gather(groups_wide2, key = factor, value = rating, Goal.setting:Writing.output, factor_key=TRUE)
+groups_long
+
+g <- groups_long %>%
+  group_by(factor, rating) %>%
+  summarise(cnt = n(), na.rm = TRUE) %>%
+  mutate(freq = round(cnt / sum(cnt), 3), na.rm = TRUE) %>% 
+  arrange(desc(freq))
+
+# remove NAs
+g2 <- as.data.frame(g[c(13:42),])
+
+# Build plot
+# use function likert() to plot likert data
+g2 <- ggplot()+
+  geom_bar(data = g2, aes(x = reorder(factor, cnt), y=cnt, fill=as.factor(rating)), position="stack", stat="identity")+
+  coord_flip() + 
+  ylab("Rating")+
+  xlab("Factor")+
+  scale_fill_brewer(palette="PRGn",
+                    name  ="Response",
+                    labels=c("Improved", "No Change", "Worsened"))+
+  theme(legend.position="bottom") +
   theme_bw(base_size = 14) +
-  xlab("Hrs per week devoted to writing") +
-  ylab("All publications")
-print(writepubs)
+  xlab("Accountability group effect") +
+  ylab("Number of respondents")
+#scale_x_discrete(limits=c("StronglyAgree", "Agree", "DontKnow","Disagree","StronglyDisagree"))
+g2
+
+View()
+
 
