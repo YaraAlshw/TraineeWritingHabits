@@ -51,22 +51,13 @@ str(survey)
 survey$writing_word <- as.factor(survey$writing_word)
 survey$review_word <- as.factor(survey$review_word)
 
-# survey$plan_writing <- as.factor(survey$plan_writing)
-# survey$writing_tracking_reco <- as.factor(survey$writing_tracking_reco)
-
 # # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
-# survey$pubtotal <- rowSums(survey[,c("firstauthor_pubs", "coauthor_pubs")], na.rm=TRUE)
-# 
-# # create a new column for career stage
-# survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
 
-
-
-#Analysis 1: first author pubs vs. time spent writing ====
-
+#Set priors and scale for all analyses
 t_prior <- student_t(df = 1, location = 0, scale = 2.5)
 
+#Analysis 1: first author pubs vs. time spent writing ====
 model_bayes1a <- stan_glm(firstauthor_pubs ~ 
                             hrs_wk_writing,
                           iter = 20000,
@@ -304,7 +295,7 @@ attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word,
                             seed = 111,
                             data = survey)
 
-posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = = c("p_direction", "rope", "bayesfactor"))
+posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor"))
 loo(attitude_model1)
 # prior_summary(attitude_model1)
 summary(attitude_model1, digits = 3)
@@ -591,19 +582,11 @@ contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothes
 contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
 
 
-#Electronic spreadsheets
-#Electronic note taking applications
-#Physical notebook
-#Checking in with writing accountability/support group
-#Checking in with advisor or mentor
-#I do not track my writing progress
-#other
-
 # boxplot for sentiment and first author pubs ====
 writing_box <-
   ggplot(aes(x = writing_word, y = firstauthor_pubs), 
          data = na.omit(survey[, c("firstauthor_pubs", "writing_word")])) +
-  geom_violin(fill = c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
+  geom_boxplot(fill = c("#EDA09C", "#966480", "#585B74")) + theme_bw(base_size = 14) +
   xlab("Feelings about scientific writing") +
   ylab("First author publications") 
 
@@ -615,10 +598,10 @@ review_box <- ggplot(aes(x = review_word, y = firstauthor_pubs),
 
 #Create 4 panel figure of the pd plots and box plot for sentiment analysis
 multi_panel <- ggarrange(common.legend = TRUE,
-                          senti_sci_plot,
-                          writing_box,
-                          senti_rev_plot,
-                          review_box,
+                         writing_box,
+                         review_box,
+                         senti_sci_plot,
+                         senti_rev_plot,
                           align = "hv", 
                           nrow = 2,
                           ncol = 2,
