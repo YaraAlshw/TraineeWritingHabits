@@ -1,0 +1,37 @@
+type,count,effec
+12output,77,Improved
+12output,35,No change
+12output,2,Worsened
+11starting,56,Improved
+11starting,56,No change
+11starting,1,Worsened
+10quality,65,Improved
+10quality,46,No change
+10quality,0,Worsened
+09time,54,Improved
+09time,54,No change
+09time,2,Worsened
+08goal,77,Improved
+08goal,32,No change
+08goal,0,Worsened
+07anxiety,60,Improved
+07anxiety,40,No change
+07anxiety,7,Worsened
+06perfect,58,Improved
+06perfect,45,No change
+06perfect,3,Worsened
+05skills,54,Improved
+05skills,50,No change
+05skills,0,Worsened
+04camarad,78,Improved
+04camarad,25,No change
+04camarad,0,Worsened
+03reviews,65,Improved
+03reviews,37,No change
+03reviews,0,Worsened
+02imposter,38,Improved
+02imposter,61,No change
+02imposter,3,Worsened
+01collab,32,Improved
+01collab,60,No change
+01collab,0,Worsened
