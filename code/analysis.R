@@ -1240,58 +1240,6 @@ table(surv2$stage) #grad 222 postdoc 70
   ggsave(plot= PP, device = "png", "figures/Fig4_lab5.png", width=7, height=10 , dpi=200)
 }
 
-# Circular plot for writing challenges Fig 1A -- currently circular plot but might change into bar plot ====
-# writing challenges
-wrt_challg <- read.csv("data/write_challange_sum.csv", header=TRUE)
-{# Q. what are some of the challenges you face with writing (pre-COVID-19)? multiple choices/answers
-  #1	I find it difficult to start a new writing project
-  #2	I have trouble fitting writing into my schedule
-  #3	I have too many other obligations
-  #4	I do not receive adequate feedback on my writing
-  #5	My perfectionism with writing hinders my progress
-  #6	I get easily distracted whenever I try to write
-}
-# 2 plot
-{
-  k1 <- ggplot(wrt_challg) +
-    # Make custom panel grid
-    geom_hline(aes(yintercept = y), data.frame(y = c(0:5) * 40), color = "lightgrey") + 
-    # add bars using geom_col instead geom_bar
-    # reorder = data from smaller % to higher
-    geom_col(aes(x = reorder((challenge), count), y = count, fill = percent), position = "dodge2", show.legend = TRUE, alpha = 0.9) +
-    # dashed segments from 0 to 150 = y-axis scale
-    geom_segment(aes(x = reorder((challenge), count), y = 0, xend = reorder((challenge), count), yend = 200), linetype = "dashed", color = "gray12") +
-    # make it circular
-    coord_polar() +
-    # y-axis center scale = so bars don't start in the center point
-    scale_y_continuous(limits = c(-50, 200), expand = c(0, 0), breaks = seq(0, 200, by = 40)) +
-    # colors fill and legend title
-    scale_fill_gradientn("Percentage",
-                         colours = c("#EDA09C","#DF858E", "#C6798F", "#966480", "#6C5B7B", "#585B74")) +
-    #remove axis ticks and text
-    theme(legend.position = "bottom",
-          axis.text.y = element_blank(),
-          #axis.text.x = element_text(color = "gray12", size = 12),
-          axis.text.x = element_blank(),
-          axis.title = element_blank(),
-          axis.ticks = element_blank()) +
-    # make the guide for the fill discrete
-    guides(fill = guide_colorsteps(barwidth = 15, barheight = 0.5, title.position = "top", title.hjust = 0.5)) +
-    # annotate custom scale inside plot
-    annotate(x = 6.5, y =  40, label =  "40", geom = "text", color = "gray12", size = 3.5) +
-    annotate(x = 6.5, y = 120, label = "120", geom = "text", color = "gray12", size = 3.5) +
-    annotate(x = 6.5, y = 200, label = "200", geom = "text", color = "gray12", size = 3.5) +
-    # remove backgroung and plot lines - it will show the custom panel grid made
-    theme(text = element_text(color = "gray12"),
-          panel.background = element_rect(fill = "white", color = "white"),
-          panel.grid = element_blank(),
-          panel.grid.major.x = element_blank())
-  k1
-  #ggsave(plot=k1, "Fig2_wrt-challenge.png", width=6, height=6, dpi=1200)
-}
-geom_bar(data = g2, aes(x = reorder(factor, cnt), y=cnt, fill=as.factor(rating)), position="stack", stat="identity")
-
-
 # Barplot for figure 4 - major challenges to writing ====
 #read data
 wrt_challg <- read.csv("data/write_challange_sum.csv")
