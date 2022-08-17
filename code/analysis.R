@@ -934,6 +934,7 @@ wrt_group <- read.csv("data/wrtgr_effect_sum2.csv", header=TRUE)
 # Q. Lab members provide feedback? (y/n)
 # Q. Has lab feedback improved writing? (y/n)
 # lab_collab with NA
+
 {
   # data frame
   # lab_collab = col
@@ -1078,7 +1079,8 @@ wrt_group <- read.csv("data/wrtgr_effect_sum2.csv", header=TRUE)
     annotate("text", x=050, y=2.3, size=4, label="31%") +
     annotate("text", x=250, y=2.3, size=4, label="69%") +
     annotate("text", x=050, y=3.3, size=4, label="37%") +
-    annotate("text", x=250, y=3.3, size=4, label="63%")
+    annotate("text", x=250, y=3.3, size=4, label="63%") +
+    ggtitle("Lab group involvment and feedback") 
   p2
   #ggsave(plot=p2, device="png", "Fig_collab.png", width=8, height=4, dpi=200)
 }
@@ -1235,7 +1237,102 @@ table(surv2$stage) #grad 222 postdoc 70
     draw_label(x=0.05, y=0.71, size=18, "B") +
     draw_label(x=0.50, y=0.46, size=14, "Rounds of revisions before submission") +
     draw_label(x=0.05, y=0.46, size=18, "C")
-  ggsave(plot= PP, device = "png", "Fig4_lab5.png", width=7, height=10 , dpi=200)
+  ggsave(plot= PP, device = "png", "figures/Fig4_lab5.png", width=7, height=10 , dpi=200)
 }
 
-#
+# Circular plot for writing challenges Fig 1A -- currently circular plot but might change into bar plot ====
+# writing challenges
+wrt_challg <- read.csv("data/write_challange_sum.csv", header=TRUE)
+{# Q. what are some of the challenges you face with writing (pre-COVID-19)? multiple choices/answers
+  #1	I find it difficult to start a new writing project
+  #2	I have trouble fitting writing into my schedule
+  #3	I have too many other obligations
+  #4	I do not receive adequate feedback on my writing
+  #5	My perfectionism with writing hinders my progress
+  #6	I get easily distracted whenever I try to write
+}
+# 2 plot
+{
+  k1 <- ggplot(wrt_challg) +
+    # Make custom panel grid
+    geom_hline(aes(yintercept = y), data.frame(y = c(0:5) * 40), color = "lightgrey") + 
+    # add bars using geom_col instead geom_bar
+    # reorder = data from smaller % to higher
+    geom_col(aes(x = reorder((challenge), count), y = count, fill = percent), position = "dodge2", show.legend = TRUE, alpha = 0.9) +
+    # dashed segments from 0 to 150 = y-axis scale
+    geom_segment(aes(x = reorder((challenge), count), y = 0, xend = reorder((challenge), count), yend = 200), linetype = "dashed", color = "gray12") +
+    # make it circular
+    coord_polar() +
+    # y-axis center scale = so bars don't start in the center point
+    scale_y_continuous(limits = c(-50, 200), expand = c(0, 0), breaks = seq(0, 200, by = 40)) +
+    # colors fill and legend title
+    scale_fill_gradientn("Percentage",
+                         colours = c("#EDA09C","#DF858E", "#C6798F", "#966480", "#6C5B7B", "#585B74")) +
+    #remove axis ticks and text
+    theme(legend.position = "bottom",
+          axis.text.y = element_blank(),
+          #axis.text.x = element_text(color = "gray12", size = 12),
+          axis.text.x = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank()) +
+    # make the guide for the fill discrete
+    guides(fill = guide_colorsteps(barwidth = 15, barheight = 0.5, title.position = "top", title.hjust = 0.5)) +
+    # annotate custom scale inside plot
+    annotate(x = 6.5, y =  40, label =  "40", geom = "text", color = "gray12", size = 3.5) +
+    annotate(x = 6.5, y = 120, label = "120", geom = "text", color = "gray12", size = 3.5) +
+    annotate(x = 6.5, y = 200, label = "200", geom = "text", color = "gray12", size = 3.5) +
+    # remove backgroung and plot lines - it will show the custom panel grid made
+    theme(text = element_text(color = "gray12"),
+          panel.background = element_rect(fill = "white", color = "white"),
+          panel.grid = element_blank(),
+          panel.grid.major.x = element_blank())
+  k1
+  #ggsave(plot=k1, "Fig2_wrt-challenge.png", width=6, height=6, dpi=1200)
+}
+geom_bar(data = g2, aes(x = reorder(factor, cnt), y=cnt, fill=as.factor(rating)), position="stack", stat="identity")
+
+
+# Barplot for figure 4 - major challenges to writing ====
+#read data
+wrt_challg <- read.csv("data/write_challange_sum.csv")
+
+  p4 <- ggplot(aes(y = reorder(challenge, count), x = count), data=wrt_challg) +
+    geom_col(width=0.3, color="black") +
+    #panel/border + ticks
+    theme(axis.ticks.length=unit(-0.15, "cm"),
+          axis.line = element_blank(),
+          panel.border = element_rect(color = "black", fill=NA)) +
+    #axis text-limits
+    scale_x_continuous(limits=c(0,200)) +
+    # title
+    ggtitle("Reported Challenges to Writing") +
+    theme(plot.title = element_text(size=16)) +
+    #axis text and labels
+    xlab(" ") +
+    theme(axis.text.y = element_text(margin=margin(r=10), size=12, color="black"),
+          axis.title.y = element_blank(),
+          axis.text.x = element_text(margin=margin(t=10), size=12, color="black"),
+          axis.title.x = element_text(margin=margin(t=10), size=12, color="black")) +
+    scale_y_discrete(labels=c("easily distracted " = "Get easily distracted when trying to write", 
+                              "difficult to start "= "Difficult to start a new project",
+                              "perfectionism"= "Perfectionism hinders writing progress",
+                              "other obligations"= "Have too many other obligations",
+                              "trouble fitting" = "Have trouble fitting writing into schedule",
+                              "no feedback "= "Do not recieve adequate feedback on writing")) +
+    # plot
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.line = element_blank(),
+          panel.border = element_rect(colour = "black", fill=NA),
+          strip.background = element_blank()) +
+    # texts
+    annotate("text", x=190, y=6.3, size=4, label="24%") +
+    annotate("text", x=147, y=5.3, size=4, label="19%") +
+    annotate("text", x=144, y=4.3, size=4, label="19%") +
+    annotate("text", x=134, y=3.3, size=4, label="17%") +
+    annotate("text", x=114, y=2.3, size=4, label="15%")  +
+    annotate("text", x=45, y=1.3, size=4, label="6%") 
+  p4
+  ggsave(plot=p4, device="png", "figures/Fig4_write_challe.png", width=8, height=4, dpi=200)
+
