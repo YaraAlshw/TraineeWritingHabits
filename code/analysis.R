@@ -675,7 +675,52 @@ track_write <- read.csv('track_write.csv', header=TRUE)
   ggsave(plot=y3, "write_track.png", width=6, height=6, dpi=1200)
 }
 
-#Bar plot for figure 4 - responses about writing group participation ====
+
+# Barplot for figure 4 - major challenges to writing ====
+#read data
+wrt_challg <- read.csv("data/write_challange_sum.csv")
+
+p4 <- ggplot(aes(y = reorder(challenge, count), x = count), data=wrt_challg) +
+  geom_col(width=0.3, color="black") +
+  #panel/border + ticks
+  theme(axis.ticks.length=unit(-0.15, "cm"),
+        axis.line = element_blank(),
+        panel.border = element_rect(color = "black", fill=NA)) +
+  #axis text-limits
+  scale_x_continuous(limits=c(0,200)) +
+  # title
+  ggtitle("Reported Challenges to Writing") +
+  theme(plot.title = element_text(size=16)) +
+  #axis text and labels
+  xlab(" ") +
+  theme(axis.text.y = element_text(margin=margin(r=10), size=12, color="black"),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(margin=margin(t=10), size=12, color="black"),
+        axis.title.x = element_text(margin=margin(t=10), size=12, color="black")) +
+  scale_y_discrete(labels=c("easily distracted " = "Get easily distracted when trying to write", 
+                            "difficult to start "= "Difficult to start a new project",
+                            "perfectionism"= "Perfectionism hinders writing progress",
+                            "other obligations"= "Have too many other obligations",
+                            "trouble fitting" = "Have trouble fitting writing into schedule",
+                            "no feedback "= "Do not recieve adequate feedback on writing")) +
+  # plot
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_blank(),
+        panel.border = element_rect(colour = "black", fill=NA),
+        strip.background = element_blank()) +
+  # texts
+  annotate("text", x=190, y=6.3, size=4, label="24%") +
+  annotate("text", x=147, y=5.3, size=4, label="19%") +
+  annotate("text", x=144, y=4.3, size=4, label="19%") +
+  annotate("text", x=134, y=3.3, size=4, label="17%") +
+  annotate("text", x=114, y=2.3, size=4, label="15%")  +
+  annotate("text", x=45, y=1.3, size=4, label="6%") 
+p4
+ggsave(plot=p4, device="png", "figures/Fig4_write_challe1.png", width=8, height=4, dpi=200)
+
+
 # Fig 5 ----
 # writing groups questions
 # Fig 5A
@@ -1154,7 +1199,7 @@ surv2 <- survey %>%
   drop_na(rev) # NA 63
 
 table(surv2$rev) 
-table(surv2$stage) #grad 222 postdoc 70
+table(surv2$stage) #grad 214 postdoc 78
 # FIG 5C
 {
   p3 <- ggplot(aes(y=rev), data=surv2) +
@@ -1239,48 +1284,3 @@ table(surv2$stage) #grad 222 postdoc 70
     draw_label(x=0.05, y=0.46, size=18, "C")
   ggsave(plot= PP, device = "png", "figures/Fig4_lab5.png", width=7, height=10 , dpi=200)
 }
-
-# Barplot for figure 4 - major challenges to writing ====
-#read data
-wrt_challg <- read.csv("data/write_challange_sum.csv")
-
-  p4 <- ggplot(aes(y = reorder(challenge, count), x = count), data=wrt_challg) +
-    geom_col(width=0.3, color="black") +
-    #panel/border + ticks
-    theme(axis.ticks.length=unit(-0.15, "cm"),
-          axis.line = element_blank(),
-          panel.border = element_rect(color = "black", fill=NA)) +
-    #axis text-limits
-    scale_x_continuous(limits=c(0,200)) +
-    # title
-    ggtitle("Reported Challenges to Writing") +
-    theme(plot.title = element_text(size=16)) +
-    #axis text and labels
-    xlab(" ") +
-    theme(axis.text.y = element_text(margin=margin(r=10), size=12, color="black"),
-          axis.title.y = element_blank(),
-          axis.text.x = element_text(margin=margin(t=10), size=12, color="black"),
-          axis.title.x = element_text(margin=margin(t=10), size=12, color="black")) +
-    scale_y_discrete(labels=c("easily distracted " = "Get easily distracted when trying to write", 
-                              "difficult to start "= "Difficult to start a new project",
-                              "perfectionism"= "Perfectionism hinders writing progress",
-                              "other obligations"= "Have too many other obligations",
-                              "trouble fitting" = "Have trouble fitting writing into schedule",
-                              "no feedback "= "Do not recieve adequate feedback on writing")) +
-    # plot
-    theme(panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.background = element_blank(),
-          axis.line = element_blank(),
-          panel.border = element_rect(colour = "black", fill=NA),
-          strip.background = element_blank()) +
-    # texts
-    annotate("text", x=190, y=6.3, size=4, label="24%") +
-    annotate("text", x=147, y=5.3, size=4, label="19%") +
-    annotate("text", x=144, y=4.3, size=4, label="19%") +
-    annotate("text", x=134, y=3.3, size=4, label="17%") +
-    annotate("text", x=114, y=2.3, size=4, label="15%")  +
-    annotate("text", x=45, y=1.3, size=4, label="6%") 
-  p4
-  ggsave(plot=p4, device="png", "figures/Fig4_write_challe.png", width=8, height=4, dpi=200)
-
