@@ -1,4 +1,5 @@
-# Multi-level strategies for improving trainee scientific writing habits
+# Habits and attitudes towards writing affect the publication output of environmental biology trainees
+## Submitted to Ecosphere
 
 ### Collaborators
 
