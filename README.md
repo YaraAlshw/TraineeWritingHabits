@@ -18,8 +18,8 @@ This repository contains code and data used in the manuscript "Habits and attitu
 #### (1) Data
 Contains all survey data (available on Dryad upon acceptance)
 
-* [Data csv file for analyses](<data/dataclean_Jul2.csv>): Current version of the data for analyses
-* [Data csv file for figures](<data/dataclean_May2.csv>): Current version of the data for generating figures
+* [Data csv file for analyses](<data/dataclean_Jul22.csv>): Current version of the data for analyses
+* [Data csv file for figures](<data/dataclean_May22.csv>): Current version of the data for generating figures
 * The remaining five csv data files include summary data for specific questions which were used to generate figures
 
 #### (2) Code
