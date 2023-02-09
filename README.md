@@ -27,7 +27,7 @@ Contains all R code used to run models in the paper
 
 * [analysis.R](<code/analysis.R>): This script file includes code for all models used in the manuscript
 * [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>). Ultimately we went with unanimous co-author agreement because too many of our words were missing from established sentiment dictionaries. The results from these analyses closely match the one in the paper.
-* [survey_figs.R] (<code/survey_figs.R>): This script file includes code for all figures used in the manuscript
+* [survey_figs.R](<code/survey_figs.R>): This script file includes code for all figures used in the manuscript
 
 #### (3) Figures
 Copies of all figures generated for the manuscript
