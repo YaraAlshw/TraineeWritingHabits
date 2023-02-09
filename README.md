@@ -1,7 +1,8 @@
-# Habits and attitudes towards writing affect the publication output of environmental biology trainees
-## Submitted to Ecosphere
+# Description
 
-### Collaborators
+This repository contains code and data used in the manuscript "Habits and attitudes towards writing affect the publication output of environmental biology trainees", under review in Ecosphere
+
+### Authors
 
 - Yara Alshwairikh*
 - Ana Clara Fanton*
@@ -12,12 +13,21 @@
 
 *co-first authors
 
-### Links to resources for this manuscript
-* [Color palette](<https://coolors.co/405364-585b74-6c5b7b-966480-c6798f-df858e-eda09c> "Color palette") for figures
-* [Box figure draft](<https://docs.google.com/presentation/d/1CSUlPH7a5M1es4IyuSy8WH2JvQX9nPUwl5_y_ahd9Xg/edit#slide=id.gcb8342311d_1_0.>)
-* [Data csv file](<data/dataclean_Nov2.csv>): Current version of the data for analyses. Last updated for word sentiment (positive/negative/neutral) by all coauthors
+### Contents
 
-### Code in this repository
-* [analysis.R](<code/analysis.R>): Thie script file includes code for models and figures from the manuscript
+#### (1) Data
+Contains all survey data (available on Dryad upon acceptance)
+
+* [Data csv file for analyses](<data/dataclean_Jul2.csv>): Current version of the data for analyses
+* [Data csv file for figures](<data/dataclean_May2.csv>): Current version of the data for generating figures
+* The remaining five csv data files include summary data for specific questions which were used to generate figures
+
+#### (2) Code
+Contains all R code used to run models in the paper
+
+* [analysis.R](<code/analysis.R>): This script file includes code for all models used in the manuscript
 * [SentimentAnalysis.R](<code/SentimentAnalysis.R>): Code for running the sentiment analysis using R package [tidytext](<https://www.tidytextmining.com/sentiment.html>). Ultimately we went with unanimous co-author agreement because too many of our words were missing from established sentiment dictionaries. The results from these analyses closely match the one in the paper.
-* [CareerFigure.R](<code/CareerFigure.R>): Code for importing data, cleaning, and making the career interest figure
+* [survey_figs.R] (<code/survey_figs.R>): This script file includes code for all figures used in the manuscript
+
+#### (3) Figures
+Copies of all figures generated for the manuscript
