@@ -1,6 +1,5 @@
 ## Analysis code for Alshwairikh and Fanton et al.
 # Code by F. Rowland and Y. Alshwairikh
-# Figures by A. Fanton
 # Last edit March 2023
 
 # Load libraries
