@@ -1,6 +1,7 @@
 ## Analysis code for Alshwairikh and Fanton et al.
 # Code by F. Rowland and Y. Alshwairikh
-# Last edit August 2022
+# Figures by A. Fanton
+# Last edit March 2023
 
 # Load libraries
 library(ggplot2)
