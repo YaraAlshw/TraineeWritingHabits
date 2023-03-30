@@ -85,7 +85,7 @@ writepubs <-
     pch = 21,
     aes(fill = trainingtot),
     size = 3,
-    alpha = 0.7
+    alpha = 1
   ) +
   # scale_fill_viridis(name = "Training total (yrs)") +
   scale_fill_gradientn(
@@ -101,7 +101,7 @@ writepubs <-
     name = "Training total (yrs)"
   ) +
   theme_classic(base_size = 14) +
-  theme(panel.border = size(fill = NA, size = 1)) +
+  theme(panel.border = element_rect(fill = NA, size = 1)) +
   geom_abline(
     aes(intercept = intercept, slope = hrs_wk_writing), 
     data = slice_sample(fits, n = n_draws), 
