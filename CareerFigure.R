@@ -81,3 +81,8 @@ all_career <- ggplot(aes(x = value, y = key, fill = 0.5-abs(0.5-stat(ecdf))), da
                               'NGO'))
 
 ggsave(all_career, filename = glue("figures/career_interest_figure_{Sys.Date()}.png"), width = 7, height = 5, dpi=300)
+
+
+head(survey)
+
+mod1 <- lm(pubtotal ~ female*ESL*firstgen*BIPOC*condition, data = survey)
