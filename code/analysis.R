@@ -101,7 +101,7 @@ writepubs <-
     name = "Training total (yrs)"
   ) +
   theme_classic(base_size = 14) +
-  theme(panel.border = element_rect(fill = NA, size = 1)) +
+  theme(panel.border = size(fill = NA, size = 1)) +
   geom_abline(
     aes(intercept = intercept, slope = hrs_wk_writing), 
     data = slice_sample(fits, n = n_draws), 
@@ -112,7 +112,7 @@ writepubs <-
   geom_abline(
     intercept = median(fits$intercept), 
     slope = median(fits$hrs_wk_writing), 
-    size = 1, 
+    linewidth = 1, 
     color = col_median
   ) +
   xlab("Hours per week devoted to writing") +
