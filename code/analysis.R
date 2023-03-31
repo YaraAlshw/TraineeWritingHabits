@@ -34,6 +34,13 @@ survey <- survey %>% mutate_each(funs(empty_as_na))
 survey$writing_word <- as.factor(survey$writing_word)
 survey$review_word <- as.factor(survey$review_word)
 
+# create a new column for career stage
+survey$stage <- ifelse(is.na(survey$postdoc_yrs), "grad", "postdoc")
+
+# make two dataframes for grads and postdocs ----
+grads <- subset(survey, is.na(survey$postdoc_yrs))
+postdocs <- subset(survey, !is.na(survey$postdoc_yrs))
+
 # # create new columns for total training and pubs
 survey$trainingtot <- rowSums(survey[,c("graduate_yrs", "postdoc_yrs")], na.rm=TRUE)
 
@@ -64,7 +71,7 @@ launch_shinystan(model_bayes1a)
 # plot posterior fits to show uncertainty
 fits <- model_bayes1a %>% 
   as_tibble() %>% 
-  rename(intercept = `(Intercept)`) %>% 
+  dplyr::rename(intercept = `(Intercept)`) %>% 
   select(-sigma)
 fits
 
@@ -122,6 +129,169 @@ print(writepubs)
 # save figure
 ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 300, height = 4, width = 6)
 
+#Analysis 1_grads: first author pubs vs. time spent writing for grads ====
+model_bayes1a <- stan_glm(firstauthor_pubs ~ 
+                            hrs_wk_writing,
+                          iter = 20000,
+                          prior = t_prior,
+                          prior_intercept = t_prior,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000, 
+                          data= grads, seed=111)
+#interpret
+describe_posterior(model_bayes1a, test = c("p_direction", "rope", "bayesfactor"))
+summary(model_bayes1a, digits = 3)
+posteriors_model_bayes1a <- posterior(model_bayes1a)
+
+loo(model_bayes1a) # fit is good
+# prior_summary(model_bayes1a) # if want to see priors we used
+
+# shinystan to check for model fit
+launch_shinystan(model_bayes1a)
+
+# plot posterior fits to show uncertainty
+fits <- model_bayes1a %>% 
+  as_tibble() %>% 
+  dplyr::rename(intercept = `(Intercept)`) %>% 
+  select(-sigma)
+fits
+
+# randomly plot 500 posterior draws
+# aesthetic controllers
+n_draws <- 200
+alpha_level <- .15
+col_draw <- "grey60"
+col_median <-  "#405364"
+
+
+# does writing more mean more papers? YES
+### Figure 1 ----
+writepubs <-
+  ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = grads) +
+  geom_jitter(
+    width = 0.2,
+    pch = 21,
+    aes(fill = trainingtot),
+    size = 3,
+    alpha = 0.7
+  ) +
+  # scale_fill_viridis(name = "Training total (yrs)") +
+  scale_fill_gradientn(
+    colours = c(
+      "#EDA09C",
+      "#DF858E",
+      "#C6798F",
+      "#966480",
+      "#6C5B7B",
+      "#585B74",
+      "#405364"
+    ),
+    name = "Training total (yrs)"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(panel.border = element_rect(fill = NA, size = 1)) +
+  geom_abline(
+    aes(intercept = intercept, slope = hrs_wk_writing), 
+    data = slice_sample(fits, n = n_draws), 
+    color = col_draw, 
+    alpha = alpha_level
+  ) + 
+  # Plot the median values in blue
+  geom_abline(
+    intercept = median(fits$intercept), 
+    slope = median(fits$hrs_wk_writing), 
+    size = 1, 
+    color = col_median
+  ) +
+  xlab("Hours per week devoted to writing") +
+  ylab("First-authored publications")
+print(writepubs)
+
+# save figure
+ggsave(writepubs, filename = "figures/time_firstauth_grads.png", dpi = 1200, height = 4, width = 6)
+
+#Analysis 1_postdocs: first author pubs vs. time spent writing for grads ====
+model_bayes1a <- stan_glm(firstauthor_pubs ~ 
+                            hrs_wk_writing,
+                          iter = 20000,
+                          prior = t_prior,
+                          prior_intercept = t_prior,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000, 
+                          data= postdocs, seed=111)
+#interpret
+describe_posterior(model_bayes1a, test = c("p_direction", "rope", "bayesfactor"))
+summary(model_bayes1a, digits = 3)
+posteriors_model_bayes1a <- posterior(model_bayes1a)
+
+loo(model_bayes1a) # fit is good
+# prior_summary(model_bayes1a) # if want to see priors we used
+
+# shinystan to check for model fit
+launch_shinystan(model_bayes1a)
+
+# plot posterior fits to show uncertainty
+fits <- model_bayes1a %>% 
+  as_tibble() %>% 
+  dplyr::rename(intercept = `(Intercept)`) %>% 
+  select(-sigma)
+fits
+
+# randomly plot 500 posterior draws
+# aesthetic controllers
+n_draws <- 200
+alpha_level <- .15
+col_draw <- "grey60"
+col_median <-  "#405364"
+
+
+# does writing more mean more papers? YES
+### Figure 1 ----
+writepubs <-
+  ggplot(aes(x = hrs_wk_writing, y = firstauthor_pubs), data = postdocs) +
+  geom_jitter(
+    width = 0.2,
+    pch = 21,
+    aes(fill = trainingtot),
+    size = 3,
+    alpha = 0.7
+  ) +
+  # scale_fill_viridis(name = "Training total (yrs)") +
+  scale_fill_gradientn(
+    colours = c(
+      "#EDA09C",
+      "#DF858E",
+      "#C6798F",
+      "#966480",
+      "#6C5B7B",
+      "#585B74",
+      "#405364"
+    ),
+    name = "Training total (yrs)"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(panel.border = element_rect(fill = NA, size = 1)) +
+  geom_abline(
+    aes(intercept = intercept, slope = hrs_wk_writing), 
+    data = slice_sample(fits, n = n_draws), 
+    color = col_draw, 
+    alpha = alpha_level
+  ) + 
+  # Plot the median values in blue
+  geom_abline(
+    intercept = median(fits$intercept), 
+    slope = median(fits$hrs_wk_writing), 
+    size = 1, 
+    color = col_median
+  ) +
+  xlab("Hours per week devoted to writing") +
+  ylab("First-authored publications")
+print(writepubs)
+
+# save figure
+ggsave(writepubs, filename = "figures/time_firstauth_postdocs.png", dpi = 1200, height = 4, width = 6)
 
 # Analysis 2: plan writing (binomial) and pub total ====
 survey$plan_writing <- as.factor(survey$plan_writing) 
@@ -164,8 +334,8 @@ posterior2 <- as.matrix(plan_model)
 
 color_scheme_set("darkgray")
 plan_plot <- bayesplot::mcmc_intervals(posterior2,
-                                            pars = c("plan_regular", "plan_deadline",
-                                                     "plan_no")) +
+                                       pars = c("plan_regular", "plan_deadline",
+                                                "plan_no")) +
   scale_y_discrete(labels = c('Regularly schedule writing',
                               'Write before deadlines',
                               'No writing schedule')) +
@@ -175,7 +345,116 @@ plan_plot <- bayesplot::mcmc_intervals(posterior2,
   xlab("Posterior distribution of parameter") +
   theme(panel.border = element_rect(fill = NA, size = 1))
 print(plan_plot)
-ggsave(plan_plot, filename = "figures/planning_fig.png", dpi = 300, height = 5, width = 5)
+ggsave(plan_plot, filename = "figures/planning_fig.png", dpi = 1200, height = 5, width = 5)
+
+# Analysis 2_grads: plan writing (binomial) and pub total ====
+survey$plan_writing <- as.factor(survey$plan_writing) 
+
+plan_model <- stan_glm(firstauthor_pubs ~ 0 +
+                         plan_regular +
+                         plan_deadline +
+                         plan_no,
+                       iter = 20000,
+                       prior = t_prior,
+                       prior_intercept = t_prior,
+                       cores = 3,
+                       chains = 4,
+                       warmup = 10000, 
+                       data = grads,
+                       seed = 111,
+                       family = gaussian(link = "log"))
+
+bayestestR::describe_posterior(
+  plan_model,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance", "bayesfactor"),
+  centrality = "all"
+)
+
+summary(plan_model, digits = 3)
+posteriors_plan_model <- posterior(plan_model)
+
+loo(plan_model)
+# prior_summary(plan_model)
+
+
+# plot(plan_model) # check out posteriors
+launch_shinystan(plan_model)
+
+
+# does planning mean more papers?
+posterior2 <- as.matrix(plan_model)
+
+color_scheme_set("darkgray")
+plan_plot <- bayesplot::mcmc_intervals(posterior2,
+                                       pars = c("plan_regular", "plan_deadline",
+                                                "plan_no")) +
+  scale_y_discrete(labels = c('Regularly schedule writing',
+                              'Write before deadlines',
+                              'No writing schedule')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(plan_plot)
+ggsave(plan_plot, filename = "figures/planning_fig_grads.png", dpi = 1200, height = 5, width = 5)
+
+# Analysis 2_postdocs: plan writing (binomial) and pub total ====
+survey$plan_writing <- as.factor(survey$plan_writing) 
+
+plan_model <- stan_glm(firstauthor_pubs ~ 0 +
+                         plan_regular +
+                         plan_deadline +
+                         plan_no,
+                       iter = 20000,
+                       prior = t_prior,
+                       prior_intercept = t_prior,
+                       cores = 3,
+                       chains = 4,
+                       warmup = 10000, 
+                       data = postdocs,
+                       seed = 111,
+                       family = gaussian(link = "log"))
+
+bayestestR::describe_posterior(
+  plan_model,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance", "bayesfactor"),
+  centrality = "all"
+)
+
+summary(plan_model, digits = 3)
+posteriors_plan_model <- posterior(plan_model)
+
+loo(plan_model)
+# prior_summary(plan_model)
+
+
+# plot(plan_model) # check out posteriors
+launch_shinystan(plan_model)
+
+
+# does planning mean more papers?
+posterior2 <- as.matrix(plan_model)
+
+color_scheme_set("darkgray")
+plan_plot <- bayesplot::mcmc_intervals(posterior2,
+                                       pars = c("plan_regular", "plan_deadline",
+                                                "plan_no")) +
+  scale_y_discrete(labels = c('Regularly schedule writing',
+                              'Write before deadlines',
+                              'No writing schedule')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(plan_plot)
+ggsave(plan_plot, filename = "figures/planning_fig_postdocs.png", dpi = 1200, height = 5, width = 5)
+
 
 
 #Analysis 3: writing tracking method (binomial) and first author pub total ====
@@ -243,6 +522,136 @@ analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
 print(analysis2_plot)
 ggsave(analysis2_plot, filename = "figures/tracking_fig.png", dpi = 300, height = 5, width = 5)
 
+#Analysis 3_grads: writing tracking method (binomial) and first author pub total ====
+
+# two models: (1) with all data and (2) with first author pubs = 0 removed
+nonzero <- grads %>%
+  dplyr::filter(firstauthor_pubs > 0)
+
+model_bayes7 <- stan_glm(
+  firstauthor_pubs ~
+    0 +
+    tracking_advisor +
+    tracking_group +
+    tracking_individ +
+    tracking_no,
+  iter = 20000,
+  prior = t_prior,
+  prior_intercept = t_prior,
+  cores = 3,
+  chains = 4,
+  warmup = 10000,
+  data = grads,
+  # data = nonzero,
+  family = gaussian(link = "log"),
+  seed = 111
+)
+
+
+plot(model_bayes7)
+
+bayestestR::describe_posterior(
+  model_bayes7,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance", "bayesfactor"),
+  centrality = "all"
+)
+summary(model_bayes7, digits = 3)
+
+
+loo(model_bayes7, k_threshold = 0.7) #check if there are problems, values influencing the model
+prior_summary(model_bayes7)
+
+# check model fit
+launch_shinystan(model_bayes7)
+
+# plot model
+posterior2 <- as.matrix(model_bayes7)
+color_scheme_set("darkgray")
+analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
+                                            pars = c("tracking_advisor",
+                                                     "tracking_group",
+                                                     "tracking_individ",
+                                                     "tracking_no")
+) + # parameters of interest as they are in the model output
+  scale_y_discrete(labels = c('Advisor check-ins',
+                              'Writing group check-ins',
+                              'Individual tracking',
+                              'No tracking')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(analysis2_plot)
+ggsave(analysis2_plot, filename = "figures/tracking_fig_grads.png", dpi = 1200, height = 5, width = 5)
+
+#Analysis 3_postdocs: writing tracking method (binomial) and first author pub total ====
+
+# two models: (1) with all data and (2) with first author pubs = 0 removed
+nonzero <- postdocs %>%
+  dplyr::filter(firstauthor_pubs > 0)
+
+model_bayes7 <- stan_glm(
+  firstauthor_pubs ~
+    0 +
+    tracking_advisor +
+    tracking_group +
+    tracking_individ +
+    tracking_no,
+  iter = 20000,
+  prior = t_prior,
+  prior_intercept = t_prior,
+  cores = 3,
+  chains = 4,
+  warmup = 10000,
+  data = postdocs,
+  # data = nonzero,
+  family = gaussian(link = "log"),
+  seed = 111
+)
+
+
+plot(model_bayes7)
+
+bayestestR::describe_posterior(
+  model_bayes7,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance", "bayesfactor"),
+  centrality = "all"
+)
+summary(model_bayes7, digits = 3)
+
+
+loo(model_bayes7, k_threshold = 0.7) #check if there are problems, values influencing the model
+prior_summary(model_bayes7)
+
+# check model fit
+launch_shinystan(model_bayes7)
+
+# plot model
+posterior2 <- as.matrix(model_bayes7)
+color_scheme_set("darkgray")
+analysis2_plot <- bayesplot::mcmc_intervals(posterior2,
+                                            pars = c("tracking_advisor",
+                                                     "tracking_group",
+                                                     "tracking_individ",
+                                                     "tracking_no")
+) + # parameters of interest as they are in the model output
+  scale_y_discrete(labels = c('Advisor check-ins',
+                              'Writing group check-ins',
+                              'Individual tracking',
+                              'No tracking')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(analysis2_plot)
+ggsave(analysis2_plot, filename = "figures/tracking_fig_postdocs.png", dpi = 1200, height = 5, width = 5)
+
 
 
 ### Figure 2B and 2D make combined plot for analysis 1 & 2----
@@ -257,6 +666,9 @@ multi <- cowplot::plot_grid(
 print(multi)
 
 ggsave(multi, filename = "figures/writingplanningmulti.png", dpi = 300, height = 6, width = 6)
+
+
+
 
 # Analysis 4: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
 levels(survey$writing_word)
@@ -273,6 +685,8 @@ attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word,
                             data = survey)
 
 posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor"))
+describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor")) 
+
 loo(attitude_model1)
 # prior_summary(attitude_model1)
 summary(attitude_model1, digits = 3)
@@ -297,6 +711,91 @@ plot(attitude_model2)
 
 # explore model fit
 launch_shinystan(attitude_model2)
+
+# Analysis 4_grads: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
+levels(grads$writing_word)
+levels(grads$review_word)
+
+attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word, 
+                            iter = 10000,
+                            cores = 3,
+                            chains = 4,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
+                            warmup = 5000, 
+                            seed = 111,
+                            data = grads)
+
+posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor"))
+describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor")) 
+
+loo(attitude_model1)
+# prior_summary(attitude_model1)
+summary(attitude_model1, digits = 3)
+
+launch_shinystan(attitude_model1)
+
+
+# setting the intercept to zero allows us to compare the groups easier
+attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
+                            iter = 10000,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
+                            cores = 3,
+                            chains = 4,
+                            warmup = 5000, data = grads)
+
+describe_posterior(attitude_model2, test = c("p_direction", "rope", "bayesfactor")) 
+summary(attitude_model2)
+loo(attitude_model2)
+# prior_summary(attitude_model2)
+plot(attitude_model2)
+
+# explore model fit
+launch_shinystan(attitude_model2)
+
+# Analysis 4_postdocs: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
+levels(postdocs$writing_word)
+levels(postdocs$review_word)
+
+attitude_model1 <- stan_glm(hrs_wk_writing ~ 0 + writing_word, 
+                            iter = 10000,
+                            cores = 3,
+                            chains = 4,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
+                            warmup = 5000, 
+                            seed = 111,
+                            data = postdocs)
+
+posteriors_attitude_model1 <- describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor"))
+describe_posterior(attitude_model1, test = c("p_direction", "rope", "bayesfactor")) 
+
+loo(attitude_model1)
+# prior_summary(attitude_model1)
+summary(attitude_model1, digits = 3)
+
+launch_shinystan(attitude_model1)
+
+
+# setting the intercept to zero allows us to compare the groups easier
+attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
+                            iter = 10000,
+                            prior = t_prior,
+                            prior_intercept = t_prior,
+                            cores = 3,
+                            chains = 4,
+                            warmup = 5000, data = postdocs)
+
+describe_posterior(attitude_model2, test = c("p_direction", "rope", "bayesfactor")) 
+summary(attitude_model2)
+loo(attitude_model2)
+# prior_summary(attitude_model2)
+plot(attitude_model2)
+
+# explore model fit
+launch_shinystan(attitude_model2)
+
 
 #Analysis 5: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
@@ -397,6 +896,204 @@ senti_rev_plot <- bayesplot::mcmc_intervals(posterior4b,
 print(senti_rev_plot)
 ggsave(senti_rev_plot, filename = "figures/sentiment_rev_fig.png", dpi = 300, height = 5, width = 5)
 
+#Analysis 5_grads: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
+
+#a) scientific writing word
+## This is cool! Those who feel negative have fewer pubs than those who feel positive
+model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
+                           writing_word,
+                         iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= grads, 
+                         seed=111)
+
+plot(model_bayes4)
+
+bayestestR::describe_posterior(
+  model_bayes4,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes4, digits = 3)
+
+loo(model_bayes4) #check if there are problems, values influencing the model
+
+launch_shinystan(model_bayes4)
+
+#pd plot for analysis 5a
+posterior4 <- as.matrix(model_bayes4)
+
+color_scheme_set("darkgray")
+senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                            pars = c("writing_wordnegative", "writing_wordneutral",
+                                                     "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_sci_plot)
+ggsave(senti_sci_plot, filename = "figures/sentiment_sci_fig_grads.png", dpi = 1200, height = 5, width = 5)
+
+#b) review process word
+model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
+                            review_word,
+                          iter = 10000,
+                          prior = t_prior,
+                          prior_intercept = t_prior,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000,
+                          data= grads, seed=111)
+
+plot(model_bayes4b)
+
+bayestestR::describe_posterior(
+  model_bayes4b,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes4b, digits = 3)
+posteriors_model_bayes4b <- describe_posterior(model_bayes4b)
+
+loo(model_bayes4b) #check if there are problems, values influencing the model
+prior_summary(model_bayes4b)
+summary(model_bayes4b, digits = 3)
+
+
+# for a nicer table
+print_md(posteriors_model_bayes4b, digits = 3)
+
+launch_shinystan(model_bayes4b)
+
+#pd plot for analysis 5b
+posterior4b <- as.matrix(model_bayes4b)
+
+color_scheme_set("darkgray")
+senti_rev_plot <- bayesplot::mcmc_intervals(posterior4b,
+                                            pars = c("review_wordnegative", "review_wordneutral",
+                                                     "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_rev_plot)
+ggsave(senti_rev_plot, filename = "figures/sentiment_rev_fig_grads.png", dpi = 1200, height = 5, width = 5)
+
+#Analysis 5_postdocs: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
+
+#a) scientific writing word
+## This is cool! Those who feel negative have fewer pubs than those who feel positive
+model_bayes4 <- stan_glm(firstauthor_pubs ~ 0 +
+                           writing_word,
+                         iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= postdocs, 
+                         seed=111)
+
+plot(model_bayes4)
+
+bayestestR::describe_posterior(
+  model_bayes4,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes4, digits = 3)
+
+loo(model_bayes4) #check if there are problems, values influencing the model
+
+launch_shinystan(model_bayes4)
+
+#pd plot for analysis 5a
+posterior4 <- as.matrix(model_bayes4)
+
+color_scheme_set("darkgray")
+senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                            pars = c("writing_wordnegative", "writing_wordneutral",
+                                                     "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_sci_plot)
+ggsave(senti_sci_plot, filename = "figures/sentiment_sci_fig_postdocs.png", dpi = 1200, height = 5, width = 5)
+
+#b) review process word
+model_bayes4b <- stan_glm(firstauthor_pubs ~ 0 +
+                            review_word,
+                          iter = 10000,
+                          prior = t_prior,
+                          prior_intercept = t_prior,
+                          cores = 3,
+                          chains = 4,
+                          warmup = 5000,
+                          data= postdocs, seed=111)
+
+plot(model_bayes4b)
+
+bayestestR::describe_posterior(
+  model_bayes4b,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes4b, digits = 3)
+posteriors_model_bayes4b <- describe_posterior(model_bayes4b)
+
+loo(model_bayes4b) #check if there are problems, values influencing the model
+prior_summary(model_bayes4b)
+summary(model_bayes4b, digits = 3)
+
+
+# for a nicer table
+print_md(posteriors_model_bayes4b, digits = 3)
+
+launch_shinystan(model_bayes4b)
+
+#pd plot for analysis 5b
+posterior4b <- as.matrix(model_bayes4b)
+
+color_scheme_set("darkgray")
+senti_rev_plot <- bayesplot::mcmc_intervals(posterior4b,
+                                            pars = c("review_wordnegative", "review_wordneutral",
+                                                     "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(senti_rev_plot)
+ggsave(senti_rev_plot, filename = "figures/sentiment_rev_fig_postdocs.png", dpi = 1200, height = 5, width = 5)
+
 # Figure 3 ----
 #Create 2 panel figure of the pd plots (will add word cloud panels manually)
 multi_panel <- ggarrange(common.legend = TRUE,
@@ -446,6 +1143,79 @@ prior_summary(model_bayes5)
 
 launch_shinystan(model_bayes5)
 
+#Analysis 6_grads: pubs total and Writing support groups====
+
+#try stan_glm model
+#summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
+#summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+#grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
+#TukeyHSD(grad.aov)
+#summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
+
+model_bayes5 <- stan_glm(firstauthor_pubs ~ 
+                           writing_support_group,
+                         iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= grads, seed=111)
+
+plot(model_bayes5)
+
+bayestestR::describe_posterior(
+  model_bayes5,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes5, digits = 3)
+posteriors_model_bayes5 <- posterior(model_bayes5)
+
+loo(model_bayes5) #check if there are problems, values influencing the model
+prior_summary(model_bayes5)
+
+launch_shinystan(model_bayes5)
+
+#Analysis 6_postdocs: pubs total and Writing support groups====
+
+#try stan_glm model
+#summary(aov(lm(pubtotal ~ writing_support_group, data = survey)))
+#summary(aov(lm(pubtotal ~ writing_support_group, data = grads)))
+#grad.aov <- aov(lm(pubtotal ~ writing_support_group, data = grads))
+#TukeyHSD(grad.aov)
+#summary(aov(lm(pubtotal ~ writing_support_group, data = postdocs)))
+
+model_bayes5 <- stan_glm(firstauthor_pubs ~ 
+                           writing_support_group,
+                         iter = 10000,
+                         prior = t_prior,
+                         prior_intercept = t_prior,
+                         cores = 3,
+                         chains = 4,
+                         warmup = 5000,
+                         data= postdocs, seed=111)
+
+plot(model_bayes5)
+
+bayestestR::describe_posterior(
+  model_bayes5,
+  effects = "all",
+  component = "all",
+  test = c("p_direction", "p_significance"),
+  centrality = "all"
+)
+summary(model_bayes5, digits = 3)
+posteriors_model_bayes5 <- posterior(model_bayes5)
+
+loo(model_bayes5) #check if there are problems, values influencing the model
+prior_summary(model_bayes5)
+
+launch_shinystan(model_bayes5)
+
+
 #Analysis 7: Writing support groups, try Chi-squared test====
 #bayesian chi squared test
 #equal probability for all levels (i.e., null hypothesis is there's no difference)
@@ -463,6 +1233,42 @@ x2
 contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.17%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
 
 contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.18%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
+
+#Analysis 7_grads: Writing support groups, try Chi-squared test====
+#bayesian chi squared test
+#equal probability for all levels (i.e., null hypothesis is there's no difference)
+
+x <- xtabs( ~ writing_word + writing_support_group, grads)
+x
+grads$writing_support_group <- as.factor(survey$writing_support_group)
+
+x2 <- xtabs( ~ review_word + writing_support_group, grads)
+x2
+
+#Bayesian chi-square test from https://learningstatisticswithr.com/book/bayes.html#bayescontingency
+#BayesFactor package
+
+contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.19%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
+
+contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.16%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
+
+#Analysis 7_postdocs: Writing support groups, try Chi-squared test====
+#bayesian chi squared test
+#equal probability for all levels (i.e., null hypothesis is there's no difference)
+
+x <- xtabs( ~ writing_word + writing_support_group, postdocs)
+x
+postdocs$writing_support_group <- as.factor(survey$writing_support_group)
+
+x2 <- xtabs( ~ review_word + writing_support_group, postdocs)
+x2
+
+#Bayesian chi-square test from https://learningstatisticswithr.com/book/bayes.html#bayescontingency
+#BayesFactor package
+
+contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.35%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
+
+contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.51%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
 
 # Figure 2A Circular plot - Planning writing ====
 plan_write <- read.csv('write_progress_sum.csv', header=TRUE)
