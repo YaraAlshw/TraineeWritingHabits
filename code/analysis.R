@@ -1269,7 +1269,7 @@ x2
 contingencyTableBF(x, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.35%, so pretty much no relationship between sentiment towards scientific writing and having joined a writing group
 
 contingencyTableBF(x2, sampleType = "poisson", seed = 111) #odds for alt hypothesis is 0.51%, so pretty much no relationship between sentiment towards peer reviews process and having joined a writing group
-
+ 
 # Figure 2A Circular plot - Planning writing ====
 plan_write <- read.csv('write_progress_sum.csv', header=TRUE)
 
