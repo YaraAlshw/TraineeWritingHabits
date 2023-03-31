@@ -1,6 +1,6 @@
 ## Analysis code for Alshwairikh and Fanton et al.
 # Code by F. Rowland and Y. Alshwairikh
-# Last edit August 2022
+# Last edit March 2023
 
 # Load libraries
 library(ggplot2)
@@ -92,7 +92,7 @@ writepubs <-
     pch = 21,
     aes(fill = trainingtot),
     size = 3,
-    alpha = 0.7
+    alpha = 1
   ) +
   # scale_fill_viridis(name = "Training total (yrs)") +
   scale_fill_gradientn(
@@ -119,7 +119,7 @@ writepubs <-
   geom_abline(
     intercept = median(fits$intercept), 
     slope = median(fits$hrs_wk_writing), 
-    size = 1, 
+    linewidth = 1, 
     color = col_median
   ) +
   xlab("Hours per week devoted to writing") +
