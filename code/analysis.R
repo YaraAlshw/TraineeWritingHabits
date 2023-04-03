@@ -693,6 +693,23 @@ summary(attitude_model1, digits = 3)
 
 launch_shinystan(attitude_model1)
 
+#pd plot for analysis 4
+posterior4 <- as.matrix(attitude_model1)
+
+color_scheme_set("darkgray")
+time_senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                                 pars = c("writing_wordnegative", "writing_wordneutral",
+                                                          "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(time_senti_sci_plot)
+ggsave(time_senti_sci_plot, filename = "figures/time_sentiment_sci_fig.png", dpi = 1200, height = 5, width = 5)
 
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
@@ -709,8 +726,28 @@ loo(attitude_model2)
 # prior_summary(attitude_model2)
 plot(attitude_model2)
 
+
 # explore model fit
 launch_shinystan(attitude_model2)
+
+#pd plot for analysis 4
+posterior4 <- as.matrix(attitude_model2)
+
+color_scheme_set("darkgray")
+time_senti_rev_plot <- bayesplot::mcmc_intervals(posterior4,
+                                            pars = c("review_wordnegative", "review_wordneutral",
+                                                     "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(time_senti_rev_plot)
+ggsave(time_senti_rev_plot, filename = "figures/time_sentiment_rev_fig.png", dpi = 1200, height = 5, width = 5)
+
 
 # Analysis 4_grads: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
 levels(grads$writing_word)
@@ -735,6 +772,23 @@ summary(attitude_model1, digits = 3)
 
 launch_shinystan(attitude_model1)
 
+#pd plot for analysis 4, grads and writing word
+posterior4 <- as.matrix(attitude_model1)
+
+color_scheme_set("darkgray")
+grads_time_senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                                 pars = c("writing_wordnegative", "writing_wordneutral",
+                                                          "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(grads_time_senti_sci_plot)
+ggsave(grads_time_senti_sci_plot, filename = "figures/grads_time_sentiment_sci_fig.png", dpi = 1200, height = 5, width = 5)
 
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
@@ -753,6 +807,24 @@ plot(attitude_model2)
 
 # explore model fit
 launch_shinystan(attitude_model2)
+
+#pd plot for analysis 4, grads and review word
+posterior4 <- as.matrix(attitude_model2)
+
+color_scheme_set("darkgray")
+grads_time_senti_rev_plot <- bayesplot::mcmc_intervals(posterior4,
+                                                       pars = c("review_wordnegative", "review_wordneutral",
+                                                                "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(grads_time_senti_rev_plot)
+ggsave(grads_time_senti_rev_plot, filename = "figures/grads_time_sentiment_rev_fig.png", dpi = 1200, height = 5, width = 5)
 
 # Analysis 4_postdocs: time per week spent writing and attitude toward a) scientific writing, 2) peer review process ====
 levels(postdocs$writing_word)
@@ -777,6 +849,23 @@ summary(attitude_model1, digits = 3)
 
 launch_shinystan(attitude_model1)
 
+#pd plot for analysis 4, post docs and writing word
+posterior4 <- as.matrix(attitude_model1)
+
+color_scheme_set("darkgray")
+postdocs_time_senti_sci_plot <- bayesplot::mcmc_intervals(posterior4,
+                                                       pars = c("writing_wordnegative", "writing_wordneutral",
+                                                                "writing_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(postdocs_time_senti_sci_plot)
+ggsave(postdocs_time_senti_sci_plot, filename = "figures/postdocs_time_senti_sci_plot.png", dpi = 1200, height = 5, width = 5)
 
 # setting the intercept to zero allows us to compare the groups easier
 attitude_model2 <- stan_glm(hrs_wk_writing ~ 0 + review_word,
@@ -796,6 +885,23 @@ plot(attitude_model2)
 # explore model fit
 launch_shinystan(attitude_model2)
 
+#pd plot for analysis 4, post docs and review word
+posterior4 <- as.matrix(attitude_model2)
+
+color_scheme_set("darkgray")
+postdocs_time_senti_rev_plot <- bayesplot::mcmc_intervals(posterior4,
+                                                       pars = c("review_wordnegative", "review_wordneutral",
+                                                                "review_wordpositive")) +
+  scale_y_discrete(labels = c('Negative sentiment',
+                              'Neutral sentiment',
+                              'Positive sentiment')) +
+  theme_classic(base_size = 14) +
+  geom_vline(xintercept=0, linetype = "dotted", colour = "black", size = 1) +
+  # set your own labels
+  xlab("Posterior distribution of parameter") +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+print(postdocs_time_senti_rev_plot)
+ggsave(postdocs_time_senti_rev_plot, filename = "figures/postdocs_time_sentiment_rev_fig.png", dpi = 1200, height = 5, width = 5)
 
 #Analysis 5: first author pubs and sentiment towards a) scientific writing, 2) peer review process====
 
