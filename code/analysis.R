@@ -97,13 +97,7 @@ writepubs <-
   # scale_fill_viridis(name = "Training total (yrs)") +
   scale_fill_gradientn(
     colours = c(
-      "#EDA09C",
-      "#DF858E",
-      "#C6798F",
-      "#966480",
-      "#6C5B7B",
-      "#585B74",
-      "#405364"
+      "black", "white"
     ),
     name = "Training total (yrs)"
   ) +
@@ -127,7 +121,7 @@ writepubs <-
 print(writepubs)
 
 # save figure
-ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 300, height = 4, width = 6)
+ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 1200, height = 4, width = 6)
 
 #Analysis 1_grads: first author pubs vs. time spent writing for grads ====
 model_bayes1a <- stan_glm(firstauthor_pubs ~ 
@@ -174,18 +168,12 @@ writepubs <-
     pch = 21,
     aes(fill = trainingtot),
     size = 3,
-    alpha = 0.7
+    alpha = 1
   ) +
   # scale_fill_viridis(name = "Training total (yrs)") +
   scale_fill_gradientn(
     colours = c(
-      "#EDA09C",
-      "#DF858E",
-      "#C6798F",
-      "#966480",
-      "#6C5B7B",
-      "#585B74",
-      "#405364"
+      "black", "white"
     ),
     name = "Training total (yrs)"
   ) +
@@ -256,18 +244,12 @@ writepubs <-
     pch = 21,
     aes(fill = trainingtot),
     size = 3,
-    alpha = 0.7
+    alpha = 1
   ) +
   # scale_fill_viridis(name = "Training total (yrs)") +
   scale_fill_gradientn(
     colours = c(
-      "#EDA09C",
-      "#DF858E",
-      "#C6798F",
-      "#966480",
-      "#6C5B7B",
-      "#585B74",
-      "#405364"
+      "black", "white"
     ),
     name = "Training total (yrs)"
   ) +
