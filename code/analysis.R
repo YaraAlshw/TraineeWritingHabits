@@ -121,7 +121,7 @@ writepubs <-
 print(writepubs)
 
 # save figure
-ggsave(writepubs, filename = "figures/time_firstauth.png", dpi = 1200, height = 4, width = 6)
+ggsave(writepubs, filename = "figures/Figure1.tiff", dpi = 600, height = 4, width = 6)
 
 #Analysis 1_grads: first author pubs vs. time spent writing for grads ====
 model_bayes1a <- stan_glm(firstauthor_pubs ~ 
